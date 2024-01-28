@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.center{
+    transform: translate(-50%, -50%);
+}
+.noScroll::-webkit-scrollbar{
+    display: none;
+}
