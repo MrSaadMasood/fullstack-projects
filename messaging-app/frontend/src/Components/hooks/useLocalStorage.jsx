@@ -4,7 +4,7 @@ export default function useLocalStorage(){
     const [ value, setValue] = useState(null)
 
     const setItem = (key, value)=>{
-        localStorage.setItem(key, value)
+        localStorage.setItem(key, JSON.stringify(value))
     }
 
     const getItem = (key)=>{

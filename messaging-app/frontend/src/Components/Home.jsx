@@ -1,22 +1,19 @@
-import { useNavigate } from "react-router-dom"
-import useLocalStorage from "./hooks/useLocalStorage"
 import SideBar from "./SideBar"
-import { useState } from "react"
-import Message from "./Messages";
+import { useEffect, useState } from "react"
 import { FaList } from "react-icons/fa";
 import Messages from "./Messages";
 import Chat from "./Chat";
 import FriendRequests from "./FriendRequests";
 import Users from "./Users";
-import Profile from "./Profile";
 import Friends from "./Friends";
+import useInterceptor from "./hooks/useInterceptors";
 
 export default function Home(){
     const [ optionsSelected, setOptionsSelected] = useState(1)
     const [ headerText , setHeaderText]= useState("Chats")
     const [ selectedChat, setSelectedChat ] = useState(null)
+    const axiosPrivate = useInterceptor()
     const display = selectedChat ? "hidden" : ""
-    console.log("the selected Chat is ", selectedChat);
 
     function selectedChatSetter(chat){
         setSelectedChat(chat)
@@ -26,6 +23,13 @@ export default function Home(){
         setOptionsSelected(option)
         setHeaderText(text)
     }
+    useEffect(()=>{
+        axiosPrivate.get("/user/get-users").then(res=>{
+            console.log("the data is successly ", res.data.message)
+        }).catch(error=>{
+            console.log("the error received is", error)
+        })
+    },[])
     const array = [1,2,3,4,5,6,7,11,12,13,14,15,16,17,19,21,22,23,34,44]
     return (
         <div className=" lg:flex ">
@@ -58,8 +62,6 @@ export default function Home(){
                         if(optionsSelected === 5 ){
                             return <Users item={item} />
                         }
-                        // return <Messages item={item} />
-                        // return <FriendRequests item={item} />
                     })}
                 </div>
             </div>

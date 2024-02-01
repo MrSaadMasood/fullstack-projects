@@ -38,7 +38,7 @@ export default function LoginForm(){
             e.preventDefault()
             server.post("/auth-user/login", {...formData}).then(res=>{
                 setformData({})
-                setItem("user" , JSON.stringify(res.data))
+                setItem("user" , res.data)
                 navigate("/")
             }).catch(error=>{
                 setErrorMessage("could not log you in try again!")

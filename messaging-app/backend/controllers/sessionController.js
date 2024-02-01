@@ -40,7 +40,6 @@ exports.loginUser = async(req,res)=>{
                 { email : email}
             )
             if(!user) throw new Error
-            console.log("this is here")
             const match = await bcrypt.compare(password, user.password)
             if(!match) return res.status(404).json({message : "user not found"})
             const accessToken = generateAccessToken({ id : user._id})
@@ -48,9 +47,7 @@ exports.loginUser = async(req,res)=>{
             const refreshToken = jwt.sign({ id : user._id}, process.env.REFRESH_SECRET)
             if(!refreshToken) return res.status(412).json({ error : "cannot log in the user"})
             try {
-                console.log(typeof refreshToken);
                 const tokenStore = await database.collection("tokens").insertOne({ token : refreshToken})
-                console.log("now the request is here");
                 res.json({ accessToken, refreshToken})
             } catch (error) {
                res.status(404).json({ error : "login failed"})
@@ -68,10 +65,9 @@ exports.refreshUser = async( req, res)=>{
         if(!tokenCheck) return res.status(400).json({ error : "cannot refresh the token"})
         jwt.verify(refreshToken, process.env.REFRESH_SECRET, (err, data)=>{
             if(err) return res.sendStatus(400)
-            console.log("the data in the refresh token is ", data)
-            const accessToken = generateAccessToken(data)
-            if(!accessToken) return res.sendStatus(400)
-            res.json({ accessToken })
+            const newAccessToken = generateAccessToken({ id : data.id})
+            if(!newAccessToken) return res.sendStatus(400)
+            res.json({ newAccessToken })
         })
     } catch (error) {
         res.status(400).json({ error : "cannot refresh the token"})
@@ -87,6 +83,7 @@ exports.logoutUser = async(req, res)=>{
         res.status(400).json({ error : "logout failed"})
     }
 }
+
 function generateAccessToken(user){
     return jwt.sign(user, process.env.ACCESS_SECRET, { expiresIn : "15m"})
 }
