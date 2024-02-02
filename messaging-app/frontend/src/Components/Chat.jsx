@@ -3,6 +3,8 @@ import ChatHeader from "./ChatHeader";
 import LeftSideBox from "./LeftSideBox";
 import RightSideBox from "./RightSideBox";
 import { useEffect, useRef, useState } from "react";
+import PropTypes from "prop-types"
+
 export default function Chat({ selectedChatSetter}){
     const chatDiv = useRef()
     // const [ isScrolled, setIsScrolled] = useState(false)

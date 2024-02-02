@@ -1,13 +1,15 @@
-import axios from "axios"
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import useLocalStorage from "../hooks/useLocalStorage"
 import server from "../api/axios"
+import { isAuth } from "../Context/authContext"
 export default function LoginForm(){
         const [ formData, setformData ]  = useState({})
         const [ checked ,setChecked] = useState(false)
         const [ isFailed, setIsFailed]= useState(false)
         const [errorMessage, setErrorMessage] = useState(null)
+        const { isAuthenticated, setIsAuthenticated } = useContext(isAuth)
+        console.log("the user is", isAuthenticated)
         const width = isFailed ? "w-[23rem] h-auto" : "w-0 h-0"
         const navigate = useNavigate()
         const { setItem } = useLocalStorage()
@@ -38,9 +40,10 @@ export default function LoginForm(){
             e.preventDefault()
             server.post("/auth-user/login", {...formData}).then(res=>{
                 setformData({})
-                setItem("user" , res.data)
-                navigate("/")
-            }).catch(error=>{
+                setIsAuthenticated({ accessToken : res.data.accessToken, refreshToken : res.data.refreshToken})
+                setItem("user" ,{ accessToken : res.data.accessToken, refreshToken : res.data.refreshToken})
+                navigate("/", { state : { userData : res.data.userData}, replace : true})
+            }).catch(()=>{
                 setErrorMessage("could not log you in try again!")
                 setIsFailed(true)
             })

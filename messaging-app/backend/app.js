@@ -24,7 +24,6 @@ connectData((err)=>{
 app.use("/auth-user", authIndex )
 
 app.use("/user", authenticateUser , userRouter)
-
 function authenticateUser(req, res, next){
     const authHeader = req.headers.authorization
     const accessToken = authHeader.split(" ")[1]

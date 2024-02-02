@@ -12,7 +12,7 @@ const AuthProvider =({ children })=>{
     },[])
 
     return (
-        <isAuth.Provider value={isAuthenticated} >
+        <isAuth.Provider value={{isAuthenticated, setIsAuthenticated}} >
             {children}
         </isAuth.Provider>
     )

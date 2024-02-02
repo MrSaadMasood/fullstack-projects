@@ -15,6 +15,6 @@ router.post("/login", stringValidation("email"), stringValidation("password"), s
 
 router.post("/refresh", sessionController.refreshUser)
 
-router.delete("/logout", sessionController.logoutUser)
+router.delete("/logout/:user", sessionController.logoutUser)
 
 module.exports = router

@@ -20,7 +20,9 @@ exports.createUser =(req, res)=>{
             if (err) return console.log("error occured while hashing")
             try {
                 const user  = await database.collection("users").insertOne(
-                    { fullName : fullName, email : email, password : hashedPassword}
+                    { fullName : fullName, email : email, password : hashedPassword, friends : [],
+                        receivedRequests  : [], sentRequests : []
+                    }
                 )
                 if(!user) throw new Error
                 return res.json({message : "user successfully created"})
@@ -37,7 +39,7 @@ exports.loginUser = async(req,res)=>{
     if(result.isEmpty()){
         try {
             const user = await database.collection("users").findOne(
-                { email : email}
+                { email : email}, { projection : { fullName : 1, friends : 1, sentRequests : 1, receivedRequests : 1 , password : 1}}
             )
             if(!user) throw new Error
             const match = await bcrypt.compare(password, user.password)
@@ -48,7 +50,7 @@ exports.loginUser = async(req,res)=>{
             if(!refreshToken) return res.status(412).json({ error : "cannot log in the user"})
             try {
                 const tokenStore = await database.collection("tokens").insertOne({ token : refreshToken})
-                res.json({ accessToken, refreshToken})
+                res.json({ accessToken, refreshToken, userData : user})
             } catch (error) {
                res.status(404).json({ error : "login failed"})
             }
@@ -75,15 +77,18 @@ exports.refreshUser = async( req, res)=>{
 }
 
 exports.logoutUser = async(req, res)=>{
-    const { refreshToken } = req.body
+    const { user } = req.params
     try {   
-        const deleteToken = await database.collection("tokens").deleteOne({ token : refreshToken})
-        res.json({ message : "user successfully logged out"})
+        const deleteToken = await database.collection("tokens").deleteOne({ token : user})
+        if(deleteToken.deletedCount > 0){
+            res.json({ message : "user successfully logged out"})
+        }
+        else throw new Error
     } catch (error) {
         res.status(400).json({ error : "logout failed"})
     }
 }
 
 function generateAccessToken(user){
-    return jwt.sign(user, process.env.ACCESS_SECRET, { expiresIn : "15m"})
+    return jwt.sign(user, process.env.ACCESS_SECRET, { expiresIn : "30s"})
 }

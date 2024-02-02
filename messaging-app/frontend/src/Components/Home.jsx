@@ -7,11 +7,15 @@ import FriendRequests from "./FriendRequests";
 import Users from "./Users";
 import Friends from "./Friends";
 import useInterceptor from "./hooks/useInterceptors";
+import { useLocation } from "react-router-dom";
 
 export default function Home(){
+    const { state }= useLocation()
     const [ optionsSelected, setOptionsSelected] = useState(1)
     const [ headerText , setHeaderText]= useState("Chats")
     const [ selectedChat, setSelectedChat ] = useState(null)
+    const [dataArray, setDataArray ] = useState([])
+    const [ userData , setUserData] = useState(null)
     const axiosPrivate = useInterceptor()
     const display = selectedChat ? "hidden" : ""
 
@@ -24,13 +28,29 @@ export default function Home(){
         setHeaderText(text)
     }
     useEffect(()=>{
-        axiosPrivate.get("/user/get-users").then(res=>{
-            console.log("the data is successly ", res.data.message)
-        }).catch(error=>{
-            console.log("the error received is", error)
+        console.log(optionsSelected === 5)
+        if(optionsSelected === 5){
+            axiosPrivate.get("/user/get-users").then(res=>{
+                setDataArray(res.data.users)
+            }).catch(error=>{
+                console.log("cannot get the users", error)
+                setDataArray([])
+            })
+        }
+    },[optionsSelected])
+
+    useEffect(()=>{
+        if(state){
+            setUserData(state.userData)
+        }
+    }, [state])
+
+    function addToSentRequests(id){
+        setUserData((prevData)=>{
+            prevData.sentRequests.push(id)
+            return { ...prevData }
         })
-    },[])
-    const array = [1,2,3,4,5,6,7,11,12,13,14,15,16,17,19,21,22,23,34,44]
+    }
     return (
         <div className=" lg:flex ">
             <SideBar setOptions={selectedOptionSetter} />
@@ -45,22 +65,24 @@ export default function Home(){
                         </div>
                 </div>
                 <div className=" bg-[#1b1b1b] w-full h-[87vh] overflow-y-scroll noScroll">
-                    {array.map(item=>{
+                    {dataArray.map( data=>{
                         if(optionsSelected === 1){
-                            return <Messages item={item} selectedChatSetter={selectedChatSetter} type={1} selectedChat={selectedChat} />
+                            return <Messages data={ data} selectedChatSetter={selectedChatSetter} type={1} selectedChat={selectedChat} />
                         }
                         if(optionsSelected === 2){
-                            return <Friends item={item} selectedChatSetter={selectedChatSetter}
+                            return <Friends data={ data} selectedChatSetter={selectedChatSetter}
                              selectedOptionSetter={selectedOptionSetter} />
                         }
                         if(optionsSelected === 3){
-                            return <FriendRequests item={item} />
+                            return <FriendRequests data={ data} />
                         }
                         if(optionsSelected === 4){
-                            return <Messages item={item} selectedChatSetter={selectedChatSetter} type={2} />
+                            return <Messages data={ data} selectedChatSetter={selectedChatSetter} type={2} />
                         }
                         if(optionsSelected === 5 ){
-                            return <Users item={item} />
+                            if(userData._id !== data._id){
+                                return <Users data={ data} userData={userData} addToSentRequests={addToSentRequests} />
+                            }
                         }
                     })}
                 </div>

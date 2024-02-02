@@ -10,12 +10,13 @@ import server from "./api/axios";
 import { useContext } from "react";
 import { isAuth } from "./Context/authContext";
 export default function SideBar({ setOptions }){
-    const user = useContext(isAuth)
+    const { isAuthenticated } = useContext(isAuth)
     const { removeItem } = useLocalStorage()
     const navigate = useNavigate()
 
     function logout(){
-        server.delete("/auth-user/logout", {refreshToken : user.refreshToken}).then(res=>{
+
+        server.delete(`/auth-user/logout/${isAuthenticated.refreshToken}`).then(res=>{
             removeItem("user")
             navigate("/login")
         }).catch(error=>{
