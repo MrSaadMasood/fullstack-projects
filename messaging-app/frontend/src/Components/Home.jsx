@@ -16,19 +16,11 @@ export default function Home(){
     const [ selectedChat, setSelectedChat ] = useState(null)
     const [dataArray, setDataArray ] = useState([])
     const [ userData , setUserData] = useState(null)
+    const [ isUserChanged, setIsUserChanged] = useState(false)
     const axiosPrivate = useInterceptor()
     const display = selectedChat ? "hidden" : ""
 
-    function selectedChatSetter(chat){
-        setSelectedChat(chat)
-    }
-
-    function selectedOptionSetter(option, text){
-        setOptionsSelected(option)
-        setHeaderText(text)
-    }
     useEffect(()=>{
-        console.log(optionsSelected === 5)
         if(optionsSelected === 5){
             axiosPrivate.get("/user/get-users").then(res=>{
                 setDataArray(res.data.users)
@@ -37,7 +29,26 @@ export default function Home(){
                 setDataArray([])
             })
         }
-    },[optionsSelected])
+        if(optionsSelected === 2){
+            axiosPrivate.get("/user/get-friends").then(res=>{
+                if(res.status === 200){
+                    setDataArray(res.data.friends)
+                }
+            }).catch(()=>{
+                setDataArray([])
+            })
+        }
+        if(optionsSelected === 3){
+            axiosPrivate.get("/user/follow-requests").then(res=>{
+                console.log("received", res.data)
+                setDataArray(res.data.receivedRequests)
+                
+            }).catch((error)=>{
+                console.log("failed while getting the follow requests", error);
+                setDataArray([])
+            })
+        }
+    },[optionsSelected, axiosPrivate])
 
     useEffect(()=>{
         if(state){
@@ -45,11 +56,36 @@ export default function Home(){
         }
     }, [state])
 
+    useEffect(()=>{
+        if(isUserChanged){
+            axiosPrivate.get("/user/updated-data").then(res=>{
+                console.log("the update user data is ", res.data.updatedData)
+                setUserData(res.data.updatedData)
+                setIsUserChanged(false)
+            }).catch(error=>{
+                console.log("some error occured while getting updated user", error);
+            })
+        }
+    },[axiosPrivate, isUserChanged])
+
     function addToSentRequests(id){
         setUserData((prevData)=>{
             prevData.sentRequests.push(id)
             return { ...prevData }
         })
+    }
+    
+    function selectedChatSetter(chat){
+        setSelectedChat(chat)
+    }
+
+    function selectedOptionSetter(option, text){
+        setOptionsSelected(option)
+        setHeaderText(text)
+    }
+
+    function isUserChangedSetter(value){
+        setIsUserChanged(value)
     }
     return (
         <div className=" lg:flex ">
@@ -71,16 +107,16 @@ export default function Home(){
                         }
                         if(optionsSelected === 2){
                             return <Friends data={ data} selectedChatSetter={selectedChatSetter}
-                             selectedOptionSetter={selectedOptionSetter} />
+                             selectedOptionSetter={selectedOptionSetter} isUserChangedSetter={isUserChangedSetter} />
                         }
                         if(optionsSelected === 3){
-                            return <FriendRequests data={ data} />
+                            return <FriendRequests data={ data} isUserChangedSetter={isUserChangedSetter} />
                         }
                         if(optionsSelected === 4){
                             return <Messages data={ data} selectedChatSetter={selectedChatSetter} type={2} />
                         }
                         if(optionsSelected === 5 ){
-                            if(userData._id !== data._id){
+                            if(userData._id !== data._id && !userData.friends.includes(data._id)){
                                 return <Users data={ data} userData={userData} addToSentRequests={addToSentRequests} />
                             }
                         }

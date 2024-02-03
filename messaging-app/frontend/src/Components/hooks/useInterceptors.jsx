@@ -28,7 +28,6 @@ export default function useInterceptor(){
                     try {
                         const response = await server.post("/auth-user/refresh", { refreshToken :isAuthenticated.refreshToken})
                         const accessToken = response.data.newAccessToken
-                        console.log("the response obtained is", accessToken)
                         previousRequest.headers.Authorization = `Bearer ${accessToken}`
                         setItem("user", { accessToken, refreshToken :isAuthenticated.refreshToken })
                         return axiosCustom(previousRequest)
@@ -44,7 +43,7 @@ export default function useInterceptor(){
             axiosCustom.interceptors.request.eject(requestInterceptor)
             axiosCustom.interceptors.response.eject(responseInterceptor)
         }
-    },[isAuthenticated])
+    },[isAuthenticated, setItem])
 
     return axiosCustom
 }

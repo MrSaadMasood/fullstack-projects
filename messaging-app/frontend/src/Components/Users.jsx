@@ -6,10 +6,10 @@ export default function Users({ data, userData, addToSentRequests }){
     const backgroundColor = isRequestSend ? "bg-red-400" : " bg-red-600 hover:bg-red-700" 
     async function sendRequest(){
         try {
-            const response = await axiosPrivate.post("/user/send-request", { senderId : userData._id, receiverId : data._id})  
+            const response = await axiosPrivate.post("/user/send-request", { receiverId : data._id})  
             addToSentRequests(data._id)
         } catch (error) {
-            console.log("the request sent failed");
+            console.log("the request sent failed", error);
         }
      }
     return (
