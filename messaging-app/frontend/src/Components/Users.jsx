@@ -1,6 +1,6 @@
 import useInterceptor from "./hooks/useInterceptors"
 
-export default function Users({ data, userData, addToSentRequests }){
+export default function Users({ data, userData, addToSentRequests, isUserChangedSetter }){
     const axiosPrivate = useInterceptor()
     const isRequestSend = userData.sentRequests.includes(data._id)
     const backgroundColor = isRequestSend ? "bg-red-400" : " bg-red-600 hover:bg-red-700" 
@@ -8,6 +8,7 @@ export default function Users({ data, userData, addToSentRequests }){
         try {
             const response = await axiosPrivate.post("/user/send-request", { receiverId : data._id})  
             addToSentRequests(data._id)
+            isUserChangedSetter(true)
         } catch (error) {
             console.log("the request sent failed", error);
         }
@@ -25,7 +26,7 @@ export default function Users({ data, userData, addToSentRequests }){
                     </p>
                     <div className=" h-8 lg:h-6 w-[100%] flex justify-between items-center">
                         <button className={`h-[100%] w-[95%] rounded-md ${backgroundColor} `} 
-                        onClick={(e)=>sendRequest(data._id)} disabled={isRequestSend}>
+                        onClick={()=>sendRequest(data._id)} disabled={isRequestSend}>
                             {isRequestSend ? "Request Sent" : "Follow"}
                         </button>
                     </div>

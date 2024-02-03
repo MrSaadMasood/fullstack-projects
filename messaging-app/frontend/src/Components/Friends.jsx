@@ -1,6 +1,6 @@
 import useInterceptor from "./hooks/useInterceptors";
 
-export default function Friends({ data,selectedChatSetter, selectedOptionSetter, isUserChangedSetter}){
+export default function Friends({ data,selectedChatSetter, selectedOptionSetter, isUserChangedSetter, removeFriendFromDataArray}){
     
     const axiosPrivate = useInterceptor()
     
@@ -12,8 +12,9 @@ export default function Friends({ data,selectedChatSetter, selectedOptionSetter,
 
     async function removeFriend(id){
         try {
-            const response = await axiosPrivate.post("/user/remove-friend", { friendId : id})
+            const response = await axiosPrivate.delete(`/user/remove-friend/${id}`)
             isUserChangedSetter(true) 
+            removeFriendFromDataArray(id)
         } catch (error) {
             console.log("error while removing the friends", error)
         }
@@ -30,10 +31,10 @@ export default function Friends({ data,selectedChatSetter, selectedOptionSetter,
                         {data.fullName}
                     </p>
                     <div className=" h-8 lg:h-6 w-[100%] flex justify-between items-center">
-                        <button onClick={()=>sendMessage(data.fullName)} className=" bg-red-500 h-[100%] w-[45%] rounded-md">
+                        <button onClick={()=>sendMessage(data.fullName)} className=" bg-red-600 hover:bg-red-700 h-[100%] w-[45%] rounded-md">
                             Message
                         </button>
-                        <button onClick={()=>removeFriend(data._id)} className=" bg-red-500 h-[100%] w-[45%] rounded-md">
+                        <button onClick={()=>removeFriend(data._id)} className=" bg-red-600 hover:bg-red-700 h-[100%] w-[45%] rounded-md">
                             Remove
                         </button>
                     </div>

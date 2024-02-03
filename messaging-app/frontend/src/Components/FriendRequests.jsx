@@ -1,15 +1,26 @@
 import useInterceptor from "./hooks/useInterceptors"
 
-export default function FriendRequests({ data,  isUserChangedSetter }){
+export default function FriendRequests({ data,  isUserChangedSetter, removeFollowRequest }){
     const axiosPrivate = useInterceptor()
+    
     async function addFriend(id){
         try {
             const response = await axiosPrivate.post("/user/add-friend", { friendId : id})
             isUserChangedSetter(true)
+            removeFollowRequest(id)
         } catch (error) {
            console.log("failed to add friend", error) 
         }
+    }
 
+    async function removeRequest(id){
+        try {
+            const response = await axiosPrivate.delete(`/user/remove-follow-request/${id}`)
+            isUserChangedSetter(true)
+            removeFollowRequest(id)
+        } catch (error) {
+           console.log("failed to add friend", error) 
+        }
     }
     return (
         <div className=" p-3 flex justify-between items-center border-b-2 border-[#555555] h-28 lg:h-20">
@@ -23,10 +34,10 @@ export default function FriendRequests({ data,  isUserChangedSetter }){
                         {data.fullName}
                     </p>
                     <div className=" h-8 w-[100%] flex justify-between items-center">
-                        <button className=" bg-red-500 h-[100%] w-[45%] rounded-md" onClick={()=>addFriend(data._id)}>
+                        <button className=" bg-red-600 hover:bg-red-700 h-[100%] w-[45%] rounded-md" onClick={()=>addFriend(data._id)}>
                             Accept
                         </button>
-                        <button className="  bg-red-500 h-[100%] w-[45%] rounded-md ">
+                        <button className="  bg-red-600 hover:bg-red-700 h-[100%] w-[45%] rounded-md " onClick={()=>removeRequest(data._id)}>
                             Decline
                         </button>
                     </div>

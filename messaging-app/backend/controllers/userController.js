@@ -1,6 +1,12 @@
 const { ObjectId, MongoClient } = require("mongodb");
 const { connectData , getData} = require("../connection")
 require("dotenv").config
+
+const transactionOptions = {
+    writeConcern : { w : "majority"},
+    maxCommitTimeMs : 1000
+}
+
 let database;
 
 connectData((err)=>{
@@ -55,7 +61,6 @@ exports.getFriends = async(req, res)=>{
 exports.getFollowRequests = async(req, res)=>{
     const { id } = req.user
     const receivedRequests = await getCustomData(id, "receivedRequests")
-    console.log("the received requests are", receivedRequests)
     if(receivedRequests && receivedRequests.length > 0){
         return res.json({ receivedRequests })
     }
@@ -69,7 +74,6 @@ exports.addFriend = async(req, res)=>{
     const { friendId } = req.body
     const client = new MongoClient(process.env.MONGO_URL)
     const result = await addFriendTransaction(client , id, friendId)
-    console.log("the result is", result)
     if(result){
         res.json({message : "successfully added friend"})
     }
@@ -77,6 +81,36 @@ exports.addFriend = async(req, res)=>{
         res.status(400).json({ error : "failed to add friend"})
     }
 }
+
+exports.removeFriend = async(req, res)=>{
+    const { id } = req.user
+    const friendId = req.params.id 
+    const client = new MongoClient(process.env.MONGO_URL)
+    const result = await removeUserTransaction(client , id, friendId)
+
+    if(result){
+        res.json({message : "successfully added friend"})
+    }
+    else {
+        res.status(400).json({ error : "failed to add friend"})
+    }
+}
+
+
+exports.removeFollowRequest = async(req, res) =>{
+    const idToRemove = req.params.id
+    const { id } = req.user
+    const client = new MongoClient(process.env.MONGO_URL)
+    const result = await removeFollowRequestTransaction( client, id, idToRemove)
+
+    if(result){
+        res.json({message : "successfully added friend"})
+    }
+    else {
+        res.status(400).json({ error : "failed to add friend"})
+    }
+}
+
 
 async function getCustomData(id, type){
     try {
@@ -101,10 +135,7 @@ async function getCustomData(id, type){
 async function sendingRequestsTransaction(client, senderId, receiverId){
 
     const session = client.startSession()
-    const transactionOptions = {
-        writeConcern : {w : "majority"},
-        maxCommitTimeMs : 1000
-    }
+
     try {
         session.startTransaction()
         const database = client.db("chat-app")
@@ -131,15 +162,9 @@ async function sendingRequestsTransaction(client, senderId, receiverId){
 
 async function addFriendTransaction( client, acceptorId, friendId){
     const session = client.startSession()
-    const transactionOptions = {
-        writeConcern : { w : "majority"},
-        maxCommitTimeMs : 1000
-    }
-    console.log("id are ", acceptorId, friendId);
     try {
         session.startTransaction()
         const database = client.db("chat-app")
-        console.log("first log");
         await database.collection("users").updateOne(
             { _id : new ObjectId(acceptorId)},
             {
@@ -147,7 +172,6 @@ async function addFriendTransaction( client, acceptorId, friendId){
                     $pull : { receivedRequests : new ObjectId(friendId)}
             }, transactionOptions
         )
-        console.log("the session till now is successfull")
         await database.collection("users").updateOne(
             {
                 _id : new ObjectId(friendId)
@@ -158,14 +182,71 @@ async function addFriendTransaction( client, acceptorId, friendId){
                 }, transactionOptions
         )
         await session.commitTransaction()
-        console.log("succesfully added the frinds")
         return true
     } catch (error) {
-        console.log("failed while addingthe friend")
         await session.abortTransaction()
         return false
     }
     finally {
         await session.endSession()
+    }
+}
+
+
+async function removeUserTransaction(client, userId, idToRemove){
+    const session = client.startSession()
+    try {
+        session.startTransaction()
+        const database = client.db("chat-app")
+        
+        await database.collection("users").updateOne(
+            { _id : new ObjectId(userId)}, 
+            { $pull : { friends : new ObjectId(idToRemove)}},
+            transactionOptions
+        )
+
+        await database.collection("users").updateOne(
+            { _id : new ObjectId(idToRemove)},
+            { $pull : { friends : new ObjectId(userId)} },
+            transactionOptions
+        )
+
+        await session.commitTransaction()
+        return true
+    } catch (error) {
+        console.log("transaction to remove the friend failed")
+        await session.abortTransaction()
+        return false
+    }
+    finally {
+        await session.endSession()
+    }
+}
+
+async function removeFollowRequestTransaction(client, userId, idToRemove){
+    const session = client.startSession()
+    try {
+        session.startTransaction()
+        const database = client.db("chat-app")
+        
+        await database.collection("users").updateOne(
+            { _id : new ObjectId(userId)},
+            { $pull : { receivedRequests : new ObjectId(idToRemove)}}
+        )
+
+        await database.collection("users").updateOne(
+            { _id : new ObjectId(idToRemove)},
+            { $pull : { receivedRequests : new ObjectId(userId)}}
+        )
+
+        await session.commitTransaction()
+        return true
+    } catch (error) {
+        console.log("error occured while removing the follow request")
+        await session.abortTransaction()
+        return false
+    }
+    finally{
+        session.endSession()
     }
 }

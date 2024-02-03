@@ -19,7 +19,7 @@ export default function Home(){
     const [ isUserChanged, setIsUserChanged] = useState(false)
     const axiosPrivate = useInterceptor()
     const display = selectedChat ? "hidden" : ""
-
+    
     useEffect(()=>{
         if(optionsSelected === 5){
             axiosPrivate.get("/user/get-users").then(res=>{
@@ -40,7 +40,6 @@ export default function Home(){
         }
         if(optionsSelected === 3){
             axiosPrivate.get("/user/follow-requests").then(res=>{
-                console.log("received", res.data)
                 setDataArray(res.data.receivedRequests)
                 
             }).catch((error)=>{
@@ -59,7 +58,6 @@ export default function Home(){
     useEffect(()=>{
         if(isUserChanged){
             axiosPrivate.get("/user/updated-data").then(res=>{
-                console.log("the update user data is ", res.data.updatedData)
                 setUserData(res.data.updatedData)
                 setIsUserChanged(false)
             }).catch(error=>{
@@ -75,6 +73,14 @@ export default function Home(){
         })
     }
     
+    function removeFollowRequestAndFriend(id){
+        setDataArray((prevData)=>{
+            const updatedArray = prevData.filter(item=>{
+                return item._id !== id
+            })
+            return updatedArray
+        })
+    }
     function selectedChatSetter(chat){
         setSelectedChat(chat)
     }
@@ -107,17 +113,20 @@ export default function Home(){
                         }
                         if(optionsSelected === 2){
                             return <Friends data={ data} selectedChatSetter={selectedChatSetter}
-                             selectedOptionSetter={selectedOptionSetter} isUserChangedSetter={isUserChangedSetter} />
+                             selectedOptionSetter={selectedOptionSetter} isUserChangedSetter={isUserChangedSetter}
+                             removeFriendFromDataArray={removeFollowRequestAndFriend} />
                         }
                         if(optionsSelected === 3){
-                            return <FriendRequests data={ data} isUserChangedSetter={isUserChangedSetter} />
+                            return <FriendRequests data={ data} isUserChangedSetter={isUserChangedSetter}
+                            removeFollowRequest={removeFollowRequestAndFriend} />
                         }
                         if(optionsSelected === 4){
                             return <Messages data={ data} selectedChatSetter={selectedChatSetter} type={2} />
                         }
                         if(optionsSelected === 5 ){
-                            if(userData._id !== data._id && !userData.friends.includes(data._id)){
-                                return <Users data={ data} userData={userData} addToSentRequests={addToSentRequests} />
+                            if(userData._id !== data._id && userData.friends.includes(data._id) === false){
+                                return <Users data={ data} userData={userData} addToSentRequests={addToSentRequests}
+                                isUserChangedSetter={isUserChangedSetter} />
                             }
                         }
                     })}

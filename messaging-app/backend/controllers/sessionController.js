@@ -90,5 +90,5 @@ exports.logoutUser = async(req, res)=>{
 }
 
 function generateAccessToken(user){
-    return jwt.sign(user, process.env.ACCESS_SECRET, { expiresIn : "30s"})
+    return jwt.sign(user, process.env.ACCESS_SECRET, { expiresIn : "15m"})
 }

@@ -14,4 +14,8 @@ router.get("/follow-requests", userController.getFollowRequests)
 
 router.post("/add-friend", userController.addFriend)
 
+router.delete("/remove-friend/:id", userController.removeFriend)
+
+router.delete("/remove-follow-request/:id", userController.removeFollowRequest)
+
 module.exports = router
