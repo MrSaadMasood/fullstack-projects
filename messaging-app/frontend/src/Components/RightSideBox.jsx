@@ -1,4 +1,4 @@
-export default function RightSideBox(){
+export default function RightSideBox({ data }){
     return(
     <div className=" text-white text-base w-[100%] h-auto mb-2 
     flex justify-end items-center">
@@ -13,7 +13,7 @@ export default function RightSideBox(){
             </div>
             <p className=" pt-1 pb-1 pl-2 pr-2  bg-orange-600 h-auto w-auto break-all 
                  right-box flex justify-center items-center" >
-                divjjjjjjjjjjjjjjjjjj
+                {data.content}
             </p>
         </div>
     </div>

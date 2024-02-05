@@ -18,4 +18,8 @@ router.delete("/remove-friend/:id", userController.removeFriend)
 
 router.delete("/remove-follow-request/:id", userController.removeFollowRequest)
 
+router.get("/get-chat/:id", userController.getChatData )
+
+router.post("/chat-data", userController.updateChatData)
+
 module.exports = router

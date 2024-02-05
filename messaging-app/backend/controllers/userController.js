@@ -111,6 +111,45 @@ exports.removeFollowRequest = async(req, res) =>{
     }
 }
 
+exports.updateChatData = async (req, res)=>{
+    const { id} = req.user
+    const { friendId, content } = req.body
+    const client = new MongoClient(process.env.MONGO_URL)
+    const result = await updateChatMessageTransaction(client, id, friendId, content)
+
+    if(result){
+        res.json({message : "successfully added chat "})
+    }
+    else {
+        res.status(400).json({ error : "failed to add chat"})
+    }
+}
+
+exports.getChatData = async (req, res) =>{
+    const { id} = req.user
+    const friendId  = req.params.id
+    try {
+        const user = await database.collection("users").findOne({ _id : new ObjectId(id)})
+        if( !user.normalChats ){
+            return res.status(400).json({ error : "no chats are present in the database"})
+        }
+        if( user.normalChats){
+            for(let i = 0; i < user.normalChats.length; i++){
+                const iter = user.normalChats[i]
+                if(iter.friendId.toString() === friendId){
+                    const chatData = await database.collection("normalChats").findOne(
+                        { _id : new ObjectId(iter.collectionId.toString())}
+                    )
+                    return res.json({ chatData})
+                }
+            }
+        }
+        throw new Error
+    } catch (error) {
+        console.log("erro occured while while getting chatData")
+        res.status(400).json({ error : "could not collect chat data"})
+    }
+}
 
 async function getCustomData(id, type){
     try {
@@ -248,5 +287,80 @@ async function removeFollowRequestTransaction(client, userId, idToRemove){
     }
     finally{
         session.endSession()
+    }
+}
+async function updateChatMessageTransaction(client, userId, friendId, content){
+    const session = client.startSession()
+    try {
+        session.startTransaction()
+        const database = client.db("chat-app")
+
+        const user = await database.collection("users").findOne({ _id : new ObjectId(userId)})
+        if(user.normalChats){
+            for(let i = 0; i < user.normalChats.length ; i++){
+                if(user.normalChats[i].friendId.toString() === friendId){
+                    const chat = await database.collection("normalChats").updateOne(
+                        { _id : new ObjectId(user.normalChats[i].collectionId.toString())},
+                        {
+                            $push : {
+                                chat : {
+                                    userId : new ObjectId(userId),
+                                    time : new Date(),
+                                    content : content,
+                                    id : new ObjectId() 
+                                }
+                            }
+                        },
+                        transactionOptions
+                    )
+                }
+            }
+        }
+        else {
+            const newChat = await database.collection("normalChats").insertOne(
+                { chat : [{
+                    userId : new ObjectId(userId),
+                    time : new Date(),
+                    content : content,
+                    id :  new ObjectId() 
+                }]
+            },
+            transactionOptions
+            )   
+            const chatId = newChat.insertedId.toString()
+
+            const addChatIdToUser = await updateUserNormalChat(database, userId, friendId, chatId)
+            const addChatIdToFriend = await updateUserNormalChat(database, friendId, userId , chatId)
+
+            if(!addChatIdToUser || !addChatIdToFriend) throw new Error
+        }
+
+        await session.commitTransaction()
+        return true
+    } catch (error) {
+        await session.abortTransaction()
+        return false
+    }
+    finally{
+        await session.endSession()
+    }
+}
+
+async function updateUserNormalChat(database, userId ,friendId, chatId){
+    try {
+        const user = await database.collection("users").updateOne(
+            { _id : new ObjectId(userId)},
+            { $push : {
+                normalChats : {
+                    friendId : new ObjectId(friendId),
+                    collectionId : new ObjectId(chatId)
+                }
+            } 
+        }
+    )
+    return true
+    } catch (error) {
+        console.log("failed to add to the chat", error)
+        return false
     }
 }

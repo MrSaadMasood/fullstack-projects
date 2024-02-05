@@ -17,10 +17,14 @@ export default function Home(){
     const [dataArray, setDataArray ] = useState([])
     const [ userData , setUserData] = useState(null)
     const [ isUserChanged, setIsUserChanged] = useState(false)
+    const [ chatData, setChatData] = useState({ chat : []})
+    const [ friendData, setFriendData] = useState({})
+
     const axiosPrivate = useInterceptor()
-    const display = selectedChat ? "hidden" : ""
-    
+    const display = selectedChat ? "hidden" : ""    
     useEffect(()=>{
+        // if(optionsSelected === 1){
+        // }
         if(optionsSelected === 5){
             axiosPrivate.get("/user/get-users").then(res=>{
                 setDataArray(res.data.users)
@@ -93,6 +97,13 @@ export default function Home(){
     function isUserChangedSetter(value){
         setIsUserChanged(value)
     }
+    function getChatData(data){
+        axiosPrivate.get(`/user/get-chat/${data._id}`, ).then(res=>{
+            console.log("the response obtained is", res.data)
+            setChatData(res.data.chatData)
+        })
+        setFriendData(data)
+    }
     return (
         <div className=" lg:flex ">
             <SideBar setOptions={selectedOptionSetter} />
@@ -114,7 +125,7 @@ export default function Home(){
                         if(optionsSelected === 2){
                             return <Friends data={ data} selectedChatSetter={selectedChatSetter}
                              selectedOptionSetter={selectedOptionSetter} isUserChangedSetter={isUserChangedSetter}
-                             removeFriendFromDataArray={removeFollowRequestAndFriend} />
+                             removeFriendFromDataArray={removeFollowRequestAndFriend} getChatData={getChatData} />
                         }
                         if(optionsSelected === 3){
                             return <FriendRequests data={ data} isUserChangedSetter={isUserChangedSetter}
@@ -132,7 +143,9 @@ export default function Home(){
                     })}
                 </div>
             </div>
-            {selectedChat && <Chat selectedChatSetter={selectedChatSetter} />}
+            {console.log("the chatdata pssed is", chatData)}
+            {selectedChat && <Chat selectedChatSetter={selectedChatSetter} chatData={chatData} friendData={friendData}
+            userData={userData} getChatData={getChatData}  />}
             {!selectedChat &&
                 <div className=" hidden bg-black h-screen w-full lg:flex justify-center items-center text-white text-2xl">
                     <p>

@@ -32,14 +32,17 @@ db.createCollection(
                         }
                     },
                     normalChats : {
-                        bsonType : "object",
-                        required : ["friendId", "collectionId"],
-                        properties : {
-                            friendId : {
-                                bsonType : "objectId"
-                            },
-                            collectionId : {
-                                bsonType : "objectId"
+                        bsonType : "array",
+                        items : {
+                            bsonType : "object",
+                            required : ["friendId", "collectionId"],
+                            properties : {
+                                friendId : {
+                                    bsonType : "objectId"
+                                },
+                                collectionId : {
+                                    bsonType : "objectId"
+                                }
                             }
                         }
                     },
@@ -160,4 +163,84 @@ db.createCollection(
             }
         }
     }
+)
+db.runCommand({ collMod : "users", validator : {
+            $jsonSchema : {
+                required : ["fullName", "email", "password"],
+                properties : {
+                    fullName : {
+                        bsonType : "string"
+                    },
+                    email : {
+                        bsonType : "string"
+                    },
+                    password : {
+                        bsonType : "string"
+                    },
+                    friends : {
+                        bsonType : "array",
+                        items : {
+                            bsonType : "objectId"
+                        }
+                    },
+                    receivedRequests : {
+                        bsonType : "array",
+                        items : {
+                            bsonType : "objectId"
+                        }
+                    },
+                    sentRequests : {
+                        bsonType : "array",
+                        items : {
+                            bsonType : "objectId"
+                        }
+                    },
+                    normalChats : {
+                        bsonType : "object",
+                        required : ["friendId", "collectionId"],
+                        properties : {
+                            friendId : {
+                                bsonType : "string"
+                            },
+                            collectionId : {
+                                bsonType : "objectId"
+                            }
+                        }
+                    },
+                    groupChats : {
+                        bsonType : "object",
+                        required : ["id","members", "admins", "collectionId" ],
+                        properties : {
+                            id : {
+                                bsonType : "objectId"
+                            },
+                            members : {
+                                bsonType : "array",
+                                items : {
+                                    bsonType : "objectId"
+                                }
+                            },
+                            admins : {
+                                bsonType : "array",
+                                items : {
+                                    bsonType : "objectId"
+                                }
+                            },
+                            collectionId : {
+                                bsonType : "objectId"
+                            }
+                        } 
+                    },
+                    profilePicture : {
+                        bsonType : "string"
+                    },
+                    bio : {
+                        bsonType : "string"
+                    }
+
+                }
+            },
+    },
+    validationAction : "error"
+}
 )

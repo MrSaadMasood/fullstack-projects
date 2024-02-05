@@ -1,13 +1,15 @@
 import useInterceptor from "./hooks/useInterceptors";
 
-export default function Friends({ data,selectedChatSetter, selectedOptionSetter, isUserChangedSetter, removeFriendFromDataArray}){
+export default function Friends({ data,selectedChatSetter, selectedOptionSetter, isUserChangedSetter, removeFriendFromDataArray,
+ getChatData}){
     
     const axiosPrivate = useInterceptor()
     
     function sendMessage(data){
         console.log("the friend is now being messaged");
         selectedOptionSetter(1, "Chats")
-        selectedChatSetter(data)
+        selectedChatSetter(data.fullName)
+        getChatData(data)
     }
 
     async function removeFriend(id){
@@ -31,7 +33,7 @@ export default function Friends({ data,selectedChatSetter, selectedOptionSetter,
                         {data.fullName}
                     </p>
                     <div className=" h-8 lg:h-6 w-[100%] flex justify-between items-center">
-                        <button onClick={()=>sendMessage(data.fullName)} className=" bg-red-600 hover:bg-red-700 h-[100%] w-[45%] rounded-md">
+                        <button onClick={()=>sendMessage(data)} className=" bg-red-600 hover:bg-red-700 h-[100%] w-[45%] rounded-md">
                             Message
                         </button>
                         <button onClick={()=>removeFriend(data._id)} className=" bg-red-600 hover:bg-red-700 h-[100%] w-[45%] rounded-md">

@@ -1,6 +1,6 @@
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 
-export default function ChatHeader({ selectedChatSetter }){
+export default function ChatHeader({ selectedChatSetter, friendData }){
     function goBack(){
         selectedChatSetter(null)
     }
@@ -16,7 +16,7 @@ export default function ChatHeader({ selectedChatSetter }){
 
                     </div>
                     <p className=" ml-3 sm:text-lg md:text-xl">
-                        username
+                        { friendData.fullName}
                     </p>
                 </div>
             </div>
