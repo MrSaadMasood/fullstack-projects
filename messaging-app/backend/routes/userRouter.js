@@ -22,4 +22,6 @@ router.get("/get-chat/:id", userController.getChatData )
 
 router.post("/chat-data", userController.updateChatData)
 
+router.get("/get-chatlist", userController.getChatList)
+
 module.exports = router

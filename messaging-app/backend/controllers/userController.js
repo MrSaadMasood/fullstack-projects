@@ -116,7 +116,6 @@ exports.updateChatData = async (req, res)=>{
     const { friendId, content } = req.body
     const client = new MongoClient(process.env.MONGO_URL)
     const result = await updateChatMessageTransaction(client, id, friendId, content)
-
     if(result){
         res.json({message : "successfully added chat "})
     }
@@ -134,6 +133,7 @@ exports.getChatData = async (req, res) =>{
             return res.status(400).json({ error : "no chats are present in the database"})
         }
         if( user.normalChats){
+
             for(let i = 0; i < user.normalChats.length; i++){
                 const iter = user.normalChats[i]
                 if(iter.friendId.toString() === friendId){
@@ -150,6 +150,73 @@ exports.getChatData = async (req, res) =>{
         res.status(400).json({ error : "could not collect chat data"})
     }
 }
+
+exports.getChatList = async(req, res) =>{
+    const { id} = req.user
+    try {
+        const user = await database.collection("users").findOne({ _id : new ObjectId(id)})
+        if(!user.normalChats) throw new Error
+        const chatList = await database.collection("users").aggregate(
+            [
+                {
+                  $match: {
+                    _id:  new ObjectId(id),
+                  },
+                },
+                {
+                  $unwind: "$normalChats",
+                },
+                {
+                  $lookup: {
+                    from: "users",
+                    localField: "normalChats.friendId",
+                    foreignField: "_id",
+                    as: "friendsData",
+                  },
+                },
+                {
+                  $lookup: {
+                    from: "normalChats",
+                    localField: "normalChats.collectionId",
+                    foreignField: "_id",
+                    as: "messages",
+                  },
+                },
+                {
+                  $addFields: {
+                    lastMessages: {
+                      $arrayElemAt: ["$messages.chat", -1],
+                    },
+                  },
+                },
+                {
+                  $addFields: {
+                    lastMessage: {
+                      $arrayElemAt: ["$lastMessages", -1],
+                    },
+                    friendData: {
+                      $arrayElemAt: ["$friendsData", -1],
+                    },
+                  },
+                },
+                {
+                  $project: {
+                    _id: 1,
+                    lastMessage: 1,
+                    friendData: {
+                      fullName: "$friendData.fullName",
+                      _id : "$friendData._id",
+                    },
+                  },
+                },
+              ]
+        ).toArray()
+        res.json({ chatList })
+    } catch (error) {
+        res.status(400).json({ error : "failed to get the chat list"})
+    }
+}
+
 
 async function getCustomData(id, type){
     try {
@@ -313,27 +380,27 @@ async function updateChatMessageTransaction(client, userId, friendId, content){
                         },
                         transactionOptions
                     )
+                    await session.commitTransaction()
+                    return true
                 }
             }
+            
         }
-        else {
-            const newChat = await database.collection("normalChats").insertOne(
-                { chat : [{
-                    userId : new ObjectId(userId),
-                    time : new Date(),
-                    content : content,
-                    id :  new ObjectId() 
-                }]
-            },
-            transactionOptions
-            )   
-            const chatId = newChat.insertedId.toString()
+        const newChat = await database.collection("normalChats").insertOne(
+            { chat : [{
+                userId : new ObjectId(userId),
+                time : new Date(),
+                content : content,
+                id :  new ObjectId() 
+            }]
+        },
+        transactionOptions
+        )   
+        const chatId = newChat.insertedId.toString()
+        const addChatIdToUser = await updateUserNormalChat(database, userId, friendId, chatId)
+        const addChatIdToFriend = await updateUserNormalChat(database, friendId, userId , chatId)
 
-            const addChatIdToUser = await updateUserNormalChat(database, userId, friendId, chatId)
-            const addChatIdToFriend = await updateUserNormalChat(database, friendId, userId , chatId)
-
-            if(!addChatIdToUser || !addChatIdToFriend) throw new Error
-        }
+        if(!addChatIdToUser || !addChatIdToFriend) throw new Error
 
         await session.commitTransaction()
         return true

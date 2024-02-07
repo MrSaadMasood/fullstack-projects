@@ -12,7 +12,7 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
     // const [ isScrolled, setIsScrolled] = useState(false)
     // const [ arrayChanged, setArrayChanged] = useState(false)
     const [ input , setInput ] = useState("")
-    const realChat = chatData.chat
+    const realChat = chatData?.chat
 
     useEffect(()=>{
         const div = chatDiv.current
@@ -52,7 +52,6 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
             const response = await axiosPrivate.post("/user/chat-data", { friendId : friendData._id, content : input })
             getChatData(friendData)
             setInput("")
-            console.log("input resetted");
         } catch (error) {
            console.log("error occured while sending the message", error) 
         }
@@ -61,8 +60,7 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
         <div className=" lg:w-full">
             <ChatHeader selectedChatSetter={selectedChatSetter} friendData={friendData} />
             <div ref={chatDiv} className="chatbox h-[90vh] md:h-[92vh] lg:h-[82vh] p-2 pb-20 md:pb-32 lg:pb-4 relative bg-black w-full lg:w-full overflow-y-scroll noScroll ">
-                {realChat.map((chat)=>{
-                    console.log("id in chat", chat.userId, "id in usedata", userData._id);
+                {realChat?.map((chat)=>{
                         if(chat.userId === userData._id){
                             return <RightSideBox data={chat} />
                         }

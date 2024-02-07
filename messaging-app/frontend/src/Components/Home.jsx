@@ -23,8 +23,16 @@ export default function Home(){
     const axiosPrivate = useInterceptor()
     const display = selectedChat ? "hidden" : ""    
     useEffect(()=>{
-        // if(optionsSelected === 1){
-        // }
+        if(optionsSelected === 1){
+            axiosPrivate.get("/user/get-chatlist").then(res=>{
+                console.log("the chat data with last messages is", res.data);
+                setDataArray(res.data.chatList)
+            }).catch(error=>{
+                console.log("error occured while getting the chat list", error)
+                console.log("setting chat data to empty array");
+                setDataArray([])
+            })
+        }
         if(optionsSelected === 5){
             axiosPrivate.get("/user/get-users").then(res=>{
                 setDataArray(res.data.users)
@@ -98,9 +106,13 @@ export default function Home(){
         setIsUserChanged(value)
     }
     function getChatData(data){
+        console.log("the data passed in to get the chat data is", data);
         axiosPrivate.get(`/user/get-chat/${data._id}`, ).then(res=>{
             console.log("the response obtained is", res.data)
             setChatData(res.data.chatData)
+        }).catch(error=>{
+            console.log("error occured while getting the chat", error)
+            setChatData({ chat : []})
         })
         setFriendData(data)
     }
@@ -120,7 +132,8 @@ export default function Home(){
                 <div className=" bg-[#1b1b1b] w-full h-[87vh] overflow-y-scroll noScroll">
                     {dataArray.map( data=>{
                         if(optionsSelected === 1){
-                            return <Messages data={ data} selectedChatSetter={selectedChatSetter} type={1} selectedChat={selectedChat} />
+                            return <Messages data={ data} selectedChatSetter={selectedChatSetter} type={1} selectedChat={selectedChat}
+                            getChatData={getChatData} />
                         }
                         if(optionsSelected === 2){
                             return <Friends data={ data} selectedChatSetter={selectedChatSetter}
