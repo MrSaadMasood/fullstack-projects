@@ -1,4 +1,6 @@
 const express = require("express")
+const { Server } = require("socket.io")
+const http = require("http")
 const cors = require("cors")
 const app = express()
 const authIndex = require("./routes/index.js")
@@ -8,6 +10,13 @@ require("dotenv").config()
 const jwt = require("jsonwebtoken")
 
 const PORT = process.env.PORT
+const server = http.createServer(app)
+
+const io = new Server(server , {
+    cors : {
+        origin : "http://localhost:5173"
+    }
+})
 app.use(cors({
     origin : "http://localhost:5173"
 }))
@@ -16,7 +25,7 @@ app.use(express.urlencoded({ extended : false}))
 
 connectData((err)=>{
     if(!err){
-        app.listen(PORT , ()=> console.log("the server is connected at port", PORT))
+        server.listen(PORT , ()=> console.log("the server is connected at port", PORT))
     }
     else console.log(err)
 })
@@ -24,6 +33,25 @@ connectData((err)=>{
 app.use("/auth-user", authIndex )
 
 app.use("/user", authenticateUser , userRouter)
+
+io.on("connection" , (socket)=>{
+    console.log("connected to the socket")
+
+    socket.on("join-room", (oldRoomId, newRoomId)=>{
+
+        if(oldRoomId){
+            socket.leave(oldRoomId)
+        }
+        socket.join(newRoomId)
+        socket.emit("joined-chat", newRoomId)
+    })
+
+    socket.on("send-message", (roomId, data)=>{
+        socket.to(roomId).emit("received-message", data)
+    })
+
+})
+
 function authenticateUser(req, res, next){
     const authHeader = req.headers.authorization
     const accessToken = authHeader.split(" ")[1]

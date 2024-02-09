@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types"
 import useInterceptor from "./hooks/useInterceptors";
 
-export default function Chat({ selectedChatSetter, chatData, friendData, userData, getChatData }){
+export default function Chat({ selectedChatSetter, chatData, friendData, userData, sendMessageToWS}){
     const chatDiv = useRef()
     const axiosPrivate = useInterceptor()
     // const [ isScrolled, setIsScrolled] = useState(false)
@@ -50,7 +50,7 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
         e.preventDefault()
         try {
             const response = await axiosPrivate.post("/user/chat-data", { friendId : friendData._id, content : input })
-            getChatData(friendData)
+            sendMessageToWS( friendData ,input, response.data.id)
             setInput("")
         } catch (error) {
            console.log("error occured while sending the message", error) 

@@ -1,5 +1,6 @@
 const { ObjectId, MongoClient } = require("mongodb");
-const { connectData , getData} = require("../connection")
+const { connectData , getData} = require("../connection");
+const { validationResult } = require("express-validator");
 require("dotenv").config
 
 const transactionOptions = {
@@ -114,14 +115,19 @@ exports.removeFollowRequest = async(req, res) =>{
 exports.updateChatData = async (req, res)=>{
     const { id} = req.user
     const { friendId, content } = req.body
-    const client = new MongoClient(process.env.MONGO_URL)
-    const result = await updateChatMessageTransaction(client, id, friendId, content)
-    if(result){
-        res.json({message : "successfully added chat "})
-    }
-    else {
-        res.status(400).json({ error : "failed to add chat"})
-    }
+    const passed = validationResult(req)
+
+        if(passed.isEmpty()){
+            
+            const client = new MongoClient(process.env.MONGO_URL)
+            const result = await updateChatMessageTransaction(client, id, friendId, content)
+            if(result){
+                res.json({ id : result})
+            }
+            else {
+                res.status(400).json({ error : "failed to add chat"})
+            }
+        }
 }
 
 exports.getChatData = async (req, res) =>{
@@ -361,6 +367,7 @@ async function updateChatMessageTransaction(client, userId, friendId, content){
     try {
         session.startTransaction()
         const database = client.db("chat-app")
+        const randomObjectId = new ObjectId()
 
         const user = await database.collection("users").findOne({ _id : new ObjectId(userId)})
         if(user.normalChats){
@@ -374,24 +381,26 @@ async function updateChatMessageTransaction(client, userId, friendId, content){
                                     userId : new ObjectId(userId),
                                     time : new Date(),
                                     content : content,
-                                    id : new ObjectId() 
+                                    id : randomObjectId 
                                 }
                             }
                         },
                         transactionOptions
                     )
+                    console.log("the chat inserted is ", chat);
                     await session.commitTransaction()
-                    return true
+                    return randomObjectId.toString()
                 }
             }
             
         }
+        
         const newChat = await database.collection("normalChats").insertOne(
             { chat : [{
                 userId : new ObjectId(userId),
                 time : new Date(),
                 content : content,
-                id :  new ObjectId() 
+                id : randomObjectId 
             }]
         },
         transactionOptions
@@ -403,7 +412,7 @@ async function updateChatMessageTransaction(client, userId, friendId, content){
         if(!addChatIdToUser || !addChatIdToFriend) throw new Error
 
         await session.commitTransaction()
-        return true
+        return randomObjectId.toString()
     } catch (error) {
         await session.abortTransaction()
         return false

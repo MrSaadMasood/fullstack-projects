@@ -13,7 +13,8 @@ export default function Messages({data, selectedChatSetter, type = 1 , getChatDa
                         {data?.friendData.fullName}
                     </p>
                     { type === 1 && 
-                        <p className="text-sm sm:text-base lg:text-xs text-[#b2b2b2] w-[16rem] sm:w-[22rem] lg:w-[11rem]
+                        <p className="text-sm sm:text-base lg:text-xs text-[#b2b2b2] h-5 
+                        w-[16rem] sm:w-[22rem] lg:w-[10rem]
                          flex overflow-hidden ">
                             {data?.lastMessage?.content}
                         </p>

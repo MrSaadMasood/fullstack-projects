@@ -8,6 +8,7 @@ import Users from "./Users";
 import Friends from "./Friends";
 import useInterceptor from "./hooks/useInterceptors";
 import { useLocation } from "react-router-dom";
+import { io } from "socket.io-client";
 
 export default function Home(){
     const { state }= useLocation()
@@ -16,17 +17,47 @@ export default function Home(){
     const [ selectedChat, setSelectedChat ] = useState(null)
     const [dataArray, setDataArray ] = useState([])
     const [ userData , setUserData] = useState(null)
+    const [ chatList, setChatList] = useState([])
     const [ isUserChanged, setIsUserChanged] = useState(false)
     const [ chatData, setChatData] = useState({ chat : []})
     const [ friendData, setFriendData] = useState({})
-
+    const [ socket, setSocket] = useState(null)
+    const [ joinedRoom, setJoinedRoom] = useState(null)
     const axiosPrivate = useInterceptor()
     const display = selectedChat ? "hidden" : ""    
+
+    console.log(dataArray);
+    useEffect(()=>{
+        
+        const socket = io("http://localhost:3000")
+        setSocket(socket)
+
+        socket.on("joined-chat", (roomId)=>{
+            setJoinedRoom(roomId)
+        })
+
+        socket.on("received-message", (data)=>{
+            
+            setChatData((prevChatData)=>{
+                const newArray = [...prevChatData.chat, data]
+                return {
+                    ...prevChatData,
+                    chat : newArray
+                }
+            })
+
+            chatListArraySetter(data.userId, data)
+
+        })
+        return ()=>{
+            socket.disconnect()
+        }
+    },[])
     useEffect(()=>{
         if(optionsSelected === 1){
             axiosPrivate.get("/user/get-chatlist").then(res=>{
                 console.log("the chat data with last messages is", res.data);
-                setDataArray(res.data.chatList)
+                setChatList(res.data.chatList)
             }).catch(error=>{
                 console.log("error occured while getting the chat list", error)
                 console.log("setting chat data to empty array");
@@ -105,8 +136,14 @@ export default function Home(){
     function isUserChangedSetter(value){
         setIsUserChanged(value)
     }
+
+    function generateRoomId(userId, friendId){
+        const sortedArray = [userId, friendId].sort()
+        return `room${sortedArray[0]},${sortedArray[1]}`
+    }
     function getChatData(data){
         console.log("the data passed in to get the chat data is", data);
+
         axiosPrivate.get(`/user/get-chat/${data._id}`, ).then(res=>{
             console.log("the response obtained is", res.data)
             setChatData(res.data.chatData)
@@ -114,7 +151,44 @@ export default function Home(){
             console.log("error occured while getting the chat", error)
             setChatData({ chat : []})
         })
+
+        const roomId = generateRoomId(userData._id, data._id)
+        socket.emit("join-room", joinedRoom , roomId)
+
         setFriendData(data)
+    }
+    
+    function chatListArraySetter(id, data){
+
+        setChatList((prevData)=>{
+            const modified = prevData.map((item)=>{
+                if(item.friendData._id === id){
+                    item.lastMessage = data
+                }
+                return item
+            })
+            return modified
+        })
+    }
+    function sendMessageToWS(friendData, content, contentId){
+       
+        const data = { 
+                content, 
+                id : contentId,
+                time : new Date(),
+                userId : userData._id}
+
+        setChatData((prevChatData)=>{
+            const newArray = [...prevChatData.chat, data ]
+            return {
+                ...prevChatData,
+                chat : newArray
+            }
+        })
+
+        chatListArraySetter(friendData._id, data)
+
+        socket.emit("send-message", joinedRoom, data )
     }
     return (
         <div className=" lg:flex ">
@@ -130,11 +204,13 @@ export default function Home(){
                         </div>
                 </div>
                 <div className=" bg-[#1b1b1b] w-full h-[87vh] overflow-y-scroll noScroll">
-                    {dataArray.map( data=>{
+                    {optionsSelected === 1 && chatList.map((chat, index)=>{
                         if(optionsSelected === 1){
-                            return <Messages data={ data} selectedChatSetter={selectedChatSetter} type={1} selectedChat={selectedChat}
+                            return <Messages data={ chat} selectedChatSetter={selectedChatSetter} type={1} selectedChat={selectedChat}
                             getChatData={getChatData} />
                         }
+                    })}
+                    {optionsSelected !== 1 && dataArray.map( data=>{
                         if(optionsSelected === 2){
                             return <Friends data={ data} selectedChatSetter={selectedChatSetter}
                              selectedOptionSetter={selectedOptionSetter} isUserChangedSetter={isUserChangedSetter}
@@ -158,7 +234,7 @@ export default function Home(){
             </div>
             {console.log("the chatdata pssed is", chatData)}
             {selectedChat && <Chat selectedChatSetter={selectedChatSetter} chatData={chatData} friendData={friendData}
-            userData={userData} getChatData={getChatData}  />}
+            userData={userData} sendMessageToWS={sendMessageToWS} />}
             {!selectedChat &&
                 <div className=" hidden bg-black h-screen w-full lg:flex justify-center items-center text-white text-2xl">
                     <p>

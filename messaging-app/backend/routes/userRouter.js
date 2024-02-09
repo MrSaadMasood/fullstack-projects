@@ -1,6 +1,8 @@
 const express = require("express")
 const router = express.Router()
 const userController = require("../controllers/userController.js")
+const { body } = require("express-validator")
+const stringValidation  = (string)=> body(string).isString().trim().escape()
 
 router.get("/updated-data", userController.getUpdatedData)
 
@@ -20,7 +22,7 @@ router.delete("/remove-follow-request/:id", userController.removeFollowRequest)
 
 router.get("/get-chat/:id", userController.getChatData )
 
-router.post("/chat-data", userController.updateChatData)
+router.post("/chat-data", stringValidation("content"), userController.updateChatData)
 
 router.get("/get-chatlist", userController.getChatList)
 
