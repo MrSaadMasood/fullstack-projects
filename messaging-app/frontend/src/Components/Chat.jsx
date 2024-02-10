@@ -16,8 +16,8 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
     // const [ isScrolled, setIsScrolled] = useState(false)
     // const [ arrayChanged, setArrayChanged] = useState(false)
     const [ input , setInput ] = useState("")
-    const [ errorDiv , setErrorDiv] = useState(null)
     const realChat = chatData?.chat
+    const [image, setImage] = useState(null)
 
     useEffect(()=>{
         const div = chatDiv.current
@@ -29,15 +29,23 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
 
     },[chatData])
 
-    useEffect(()=>{
-        if(errorDiv){
-            const timer = setTimeout(() => {
-                setErrorDiv(null)
-            }, 2000);
+    // useEffect(()=>{
 
-            return ()=>clearTimeout(timer)
-        }
-    },[errorDiv])
+    //     async function imageUploader(){
+    //         try {
+    //             const response = await axiosPrivate.post("/user/add-chat-image", {image : image}, {
+    //                 headers : {
+    //                     "Content-Type" : "multipart/form-data"
+    //                 }
+    //             })
+    //         } catch (error) {
+    //             console.log("error occured while sending the image to the server", error)
+    //         }
+    //         }
+    //     if(image){
+    //         imageUploader()
+    //     }
+    // }, [image, axiosPrivate])
     
     // useEffect(()=>{
 
@@ -74,16 +82,23 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
     function triggerFileInput(){
         fileInputRef.current.click()
     }
-    function handleFileChange(e){
-        console.log(e.target.files[0])
+    async function handleFileChange(e){
+
         const image = e.target.files[0]
-
+        
         if(image.size > 500000){
-            setErrorDiv("Image must be less than 500kb")
-            chatDataSetter({content : "Image should be less than 500kb", userId : userData._id, time : new Date(), error : true})
-            return
+            return chatDataSetter({content : "Image should be less than 500kb", userId : userData._id, time : new Date(), error : true})
         }
-
+    
+        try {
+            const response = await axiosPrivate.post("/user/add-chat-image", { image }, {
+                headers : {
+                    "Content-Type" : "multipart/form-data"
+                }
+            })
+        } catch (error) {
+            console.log("error occured while sending the image to the server", error)
+        }
     }
     return (
         <div className=" lg:w-full">
@@ -108,13 +123,17 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
             <div >
 
                 <form className=" lg:bg-black h-12 w-full flex justify-center items-center 
-                fixed bottom-14 sm:bottom-16 md:bottom-[4.5rem] lg:static " onSubmit={handleSubmit} >
+                fixed bottom-14 sm:bottom-16 md:bottom-[4.5rem] lg:static " onSubmit={handleSubmit}
+                encType="multipart/form-data" >
                     <div className="w-10" ></div>
                     <input type="file" name="image" id="image" className=" hidden" accept=".jpg" ref={fileInputRef}
-                    onChange={handleFileChange} />
+                    onChange={handleFileChange}
+                    // onChange={(e)=>setImage(e.target.files[0])}
+                     />
                     <input type="text" name="content" id="content" placeholder="Type a message"
                     className=" p-1 md:p-1 bg-black text-white text-sm h-auto w-full rounded-lg border-2 border-gray-600"
-                    onChange={onChange} />
+                    onChange={onChange}
+                    required />
                     <button type="submit" className=" flex justify-center items-center w-10 ml-1">
                         <IoMdSend size={23} color="white" />
                     </button>

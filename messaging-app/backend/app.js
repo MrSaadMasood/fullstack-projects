@@ -8,7 +8,6 @@ const userRouter = require("./routes/userRouter.js")
 const { connectData} = require("./connection.js")
 require("dotenv").config()
 const jwt = require("jsonwebtoken")
-
 const PORT = process.env.PORT
 const server = http.createServer(app)
 
