@@ -68,3 +68,37 @@ button{
 .chatbox{
 	scroll-behavior: smooth;
 }
+
+@keyframes heightAnimation{
+	0% {
+		height: 0;
+		width: 0;
+	}
+	100%{
+		height: 56px;
+		width: 176px;
+	}
+}
+
+@keyframes heightDeanimation{
+	0% {
+		height: 56px;
+		width: 176px;
+	}
+	100%{
+		height: 0px;
+		width: 0px;
+	}
+}
+.heightAnimate {
+	animation:  heightAnimation 300ms ease-in ;
+}
+
+.heightDeanimate{
+	animation: heightDeanimation 300ms ease-in;
+}
+
+center{
+	transform: translateX(-50%);
+	transform: translateY(-50%);
+}

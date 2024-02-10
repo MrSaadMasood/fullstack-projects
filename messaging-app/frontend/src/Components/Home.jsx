@@ -38,13 +38,7 @@ export default function Home(){
 
         socket.on("received-message", (data)=>{
             
-            setChatData((prevChatData)=>{
-                const newArray = [...prevChatData.chat, data]
-                return {
-                    ...prevChatData,
-                    chat : newArray
-                }
-            })
+            chatDataSetter(data)
 
             chatListArraySetter(data.userId, data)
 
@@ -177,6 +171,14 @@ export default function Home(){
                 id : contentId,
                 time : new Date(),
                 userId : userData._id}
+        
+        chatDataSetter(data)
+        chatListArraySetter(friendData._id, data)
+
+        socket.emit("send-message", joinedRoom, data )
+    }
+
+    function chatDataSetter(data){
 
         setChatData((prevChatData)=>{
             const newArray = [...prevChatData.chat, data ]
@@ -186,11 +188,9 @@ export default function Home(){
             }
         })
 
-        chatListArraySetter(friendData._id, data)
-
-        socket.emit("send-message", joinedRoom, data )
     }
     return (
+        <div>
         <div className=" lg:flex ">
             <SideBar setOptions={selectedOptionSetter} />
             <div className={`${display} lg:inline h-screen w-full lg:ml-16 lg:w-[23rem]  bg-black lg:border-r-2
@@ -234,7 +234,7 @@ export default function Home(){
             </div>
             {console.log("the chatdata pssed is", chatData)}
             {selectedChat && <Chat selectedChatSetter={selectedChatSetter} chatData={chatData} friendData={friendData}
-            userData={userData} sendMessageToWS={sendMessageToWS} />}
+            userData={userData} sendMessageToWS={sendMessageToWS} chatDataSetter={chatDataSetter} />}
             {!selectedChat &&
                 <div className=" hidden bg-black h-screen w-full lg:flex justify-center items-center text-white text-2xl">
                     <p>
@@ -242,7 +242,18 @@ export default function Home(){
                     </p>
                 </div>
             }
+            
             {/* <Profile /> */}
         </div>
+        {/* <div>
+
+            <div className="fixed top-0 left-0 w-[100%] h-[100%] bg-black opacity-60 z-30">
+            </div>
+                <div className="fixed top-[30%] left-[40%] w-[20rem] h-[20rem] center z-40 bg-red-200">
+                    hello
+                </div>
+        </div> */}
+        </div>
+
     )
 }
