@@ -4,10 +4,16 @@ const userController = require("../controllers/userController.js")
 const { body } = require("express-validator")
 const multer = require("multer")
 const path = require("path")
-// const upload = multer({ dest : "/upload"})
+
 const storage = multer.diskStorage({
     destination : (req, file, callback)=>{
-        const absolutePath = path.join(__dirname, "uploads")
+        let absolutePath;
+        if(req.chatImage){
+            absolutePath = path.join(__dirname, "../uploads/chat-images")
+        }
+        if(req.profileImage){
+            absolutePath = path.join(__dirname, "../uploads/profile-images")
+        }
         callback(null, absolutePath)
     },
     filename : (req, file, callback)=>{
@@ -44,11 +50,8 @@ router.post("/chat-data", stringValidation("content"), userController.updateChat
 
 router.get("/get-chatlist", userController.getChatList)
 
-router.post("/add-chat-image", upload.single("image"), (req, res)=>{
+router.post("/add-chat-image",(req, _, next)=>{ req.chatImage = true ; next()}, upload.single("image"), userController.saveChatImagePath)
 
-    console.log("the path is now ", req.file)
-    // console.log("resolving the path of uploads", path.resolve("./uploads"))
-    // console.log("the response in the middle ware is", req)
-    res.json({ message : "the file is now submitted"})
-})
+router.get("/get-chat-image/:name", userController.getChatImage )
+
 module.exports = router

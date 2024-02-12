@@ -1,5 +1,31 @@
+import { useEffect, useState } from "react"
+import useInterceptor from "./hooks/useInterceptors"
+
 export default function LeftSideBox( { data} ){
+    const axiosPrivate = useInterceptor()
+    const [ url, setUrl ] = useState("")
     const dateObject = new Date(data.time)
+
+    useEffect(()=>{
+        async function getChatImage(image){
+            try {
+                const response = await axiosPrivate.get(`/user/get-chat-image/${image}`, { responseType : "blob"})
+                const imagerUrl = URL.createObjectURL(response.data)
+                setUrl(imagerUrl)
+            } catch (error) {
+                return "/pattern.jpg"
+            }
+    }
+
+    if(data.path){
+        getChatImage(data.path)
+    }
+
+    return ()=>{
+        URL.revokeObjectURL(url)
+    }
+    }, [data, axiosPrivate])
+
     return(
         <div  className=" text-white text-base w-[100%] h-auto mb-2 
         flex justify-start items-center">
@@ -9,10 +35,17 @@ export default function LeftSideBox( { data} ){
                         {dateObject.toDateString()}
                     </p>
                 </div>
-                <p className=" pt-1 pb-1 pl-2 pr-2  bg-orange-600 h-auto w-auto break-all 
-                    left-box flex justify-center items-center" >
-                    {data.content}
-                </p>
+                {data.content && 
+                    <p className=" pt-1 pb-1 pl-2 pr-2  bg-orange-600 h-auto w-auto break-all 
+                        left-box flex justify-center items-center" >
+                        {data.content}
+                    </p>
+                }
+                {data.path && 
+                    <div>
+                        <img src={url} alt="" width={"300px"}/>
+                    </div>
+                }
             </div>
         </div>
     )

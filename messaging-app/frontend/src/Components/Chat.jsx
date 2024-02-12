@@ -17,7 +17,6 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
     // const [ arrayChanged, setArrayChanged] = useState(false)
     const [ input , setInput ] = useState("")
     const realChat = chatData?.chat
-    const [image, setImage] = useState(null)
 
     useEffect(()=>{
         const div = chatDiv.current
@@ -79,27 +78,30 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
            console.log("error occured while sending the message", error) 
         }
     }
+
     function triggerFileInput(){
         fileInputRef.current.click()
     }
-    async function handleFileChange(e){
 
+    async function handleFileChange(e){
         const image = e.target.files[0]
-        
         if(image.size > 500000){
             return chatDataSetter({content : "Image should be less than 500kb", userId : userData._id, time : new Date(), error : true})
         }
-    
         try {
-            const response = await axiosPrivate.post("/user/add-chat-image", { image }, {
+            const response = await axiosPrivate.post("/user/add-chat-image", {friendId : friendData._id,  image }, {
                 headers : {
                     "Content-Type" : "multipart/form-data"
                 }
             })
+            console.log("the response obtained after sending the image is", response)
+            const { filename, id } = response.data
+            sendMessageToWS(friendData, "path", filename, id )
         } catch (error) {
             console.log("error occured while sending the image to the server", error)
         }
     }
+
     return (
         <div className=" lg:w-full">
             <ChatHeader selectedChatSetter={selectedChatSetter} friendData={friendData} />
@@ -128,7 +130,6 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
                     <div className="w-10" ></div>
                     <input type="file" name="image" id="image" className=" hidden" accept=".jpg" ref={fileInputRef}
                     onChange={handleFileChange}
-                    // onChange={(e)=>setImage(e.target.files[0])}
                      />
                     <input type="text" name="content" id="content" placeholder="Type a message"
                     className=" p-1 md:p-1 bg-black text-white text-sm h-auto w-full rounded-lg border-2 border-gray-600"

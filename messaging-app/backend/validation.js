@@ -93,7 +93,7 @@ db.createCollection(
                     bsonType : "array",
                     items : {
                         bsonType : "object",
-                        required : ["id", "userId", "content", "time"],
+                        required : ["id", "userId", "time"],
                         properties : {
                             id : {
                                 bsonType : "objectId"
@@ -102,6 +102,9 @@ db.createCollection(
                                 bsonType : "objectId"
                             },
                             content : {
+                                bsonType : "string"
+                            },
+                            path : {
                                 bsonType : "string"
                             },
                             time : {
@@ -244,3 +247,38 @@ db.runCommand({ collMod : "users", validator : {
     validationAction : "error"
 }
 )
+
+
+db.runCommand({
+    collMod : "normalChats",
+    validator : {
+            $jsonSchema : {
+                properties : {
+                chat : {
+                    bsonType : "array",
+                    items : {
+                        bsonType : "object",
+                        required : ["id", "userId", "time"],
+                        properties : {
+                            id : {
+                                bsonType : "objectId"
+                            },
+                            userId : {
+                                bsonType : "objectId"
+                            },
+                            content : {
+                                bsonType : "string"
+                            },
+                            path : {
+                                bsonType : "string"
+                            },
+                            time : {
+                                bsonType : "date"
+                            }
+                        }
+                    }
+                }
+            }
+            }
+    }
+})

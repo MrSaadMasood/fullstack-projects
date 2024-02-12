@@ -10,6 +10,7 @@ require("dotenv").config()
 const jwt = require("jsonwebtoken")
 const PORT = process.env.PORT
 const server = http.createServer(app)
+const path = require("path")
 
 const io = new Server(server , {
     cors : {
@@ -31,7 +32,16 @@ connectData((err)=>{
 
 app.use("/auth-user", authIndex )
 
+app.use(express.static("uploads"))
+
 app.use("/user", authenticateUser , userRouter)
+
+app.get("/images/:name", (req ,res)=>{
+    const { name } = req.params
+    console.log("the requst is made to get the chat images");
+    const filepath = path.join(__dirname, `./uploads/chat-images/${name}.jpg`)
+    res.sendFile(filepath)
+} )
 
 io.on("connection" , (socket)=>{
     console.log("connected to the socket")

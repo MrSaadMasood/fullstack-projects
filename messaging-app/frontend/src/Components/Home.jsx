@@ -164,10 +164,10 @@ export default function Home(){
             return modified
         })
     }
-    function sendMessageToWS(friendData, content, contentId){
+    function sendMessageToWS(friendData, type = "content", content, contentId){
        
         const data = { 
-                content, 
+                [type] : content, 
                 id : contentId,
                 time : new Date(),
                 userId : userData._id}

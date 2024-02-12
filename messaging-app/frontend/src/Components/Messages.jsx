@@ -12,12 +12,20 @@ export default function Messages({data, selectedChatSetter, type = 1 , getChatDa
                     <p className="font-bold text-base sm:text-lg lg:text-xs">
                         {data?.friendData.fullName}
                     </p>
-                    { type === 1 && 
+                    { type === 1 && data.lastMessage.content && 
                         <p className="text-sm sm:text-base lg:text-xs text-[#b2b2b2] h-5 
                         w-[16rem] sm:w-[22rem] lg:w-[10rem]
                          flex overflow-hidden ">
+                            
                             {data?.lastMessage?.content}
                         </p>
+                    }
+                    {type === 1 && !data.lastMessage.content && 
+                        <p className="text-sm sm:text-base lg:text-xs text-[#b2b2b2] h-5 
+                            w-[16rem] sm:w-[22rem] lg:w-[10rem]
+                            flex overflow-hidden ">
+                                Image Received    
+                            </p>    
                     }
                     { type === 2 && 
                         <div className=" text-sm sm:text-base lg:text-xs text-[#b2b2b2] w-[16rem] sm:w-[22rem] lg:w-[11rem] 

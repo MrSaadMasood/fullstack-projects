@@ -2,6 +2,7 @@ const { ObjectId, MongoClient } = require("mongodb");
 const { connectData , getData} = require("../connection");
 const { validationResult } = require("express-validator");
 require("dotenv").config
+const path = require("path")
 
 const transactionOptions = {
     writeConcern : { w : "majority"},
@@ -223,7 +224,28 @@ exports.getChatList = async(req, res) =>{
     }
 }
 
+exports.saveChatImagePath = async (req, res)=>{
+    const { friendId} = req.body
+    const { id } = req.user
+    const client = new MongoClient(process.env.MONGO_URL)
+    const { filename } = req.file
+    const filePath = filename
+    const result = await updateChatMessageTransaction(client, id, friendId, filePath ,"path")
 
+    if(result){
+        res.json({ filename : req.file.filename, id : result})
+    }
+    else {
+        res.status(400).json({ error : "failed to add image"})
+    }
+}
+
+exports.getChatImage = (req, res)=>{
+    const { name } = req.params
+    console.log("the requst is made to get the chat images");
+    const filepath = path.join(__dirname, `../uploads/chat-images/${name}`)
+    res.sendFile(filepath)
+}
 async function getCustomData(id, type){
     try {
         const user = await database.collection("users").findOne({ _id : new ObjectId(id)})
@@ -362,7 +384,7 @@ async function removeFollowRequestTransaction(client, userId, idToRemove){
         session.endSession()
     }
 }
-async function updateChatMessageTransaction(client, userId, friendId, content){
+async function updateChatMessageTransaction(client, userId, friendId, content, contentType = "content"){
     const session = client.startSession()
     try {
         session.startTransaction()
@@ -380,7 +402,7 @@ async function updateChatMessageTransaction(client, userId, friendId, content){
                                 chat : {
                                     userId : new ObjectId(userId),
                                     time : new Date(),
-                                    content : content,
+                                    [contentType] : content,
                                     id : randomObjectId 
                                 }
                             }
@@ -399,7 +421,7 @@ async function updateChatMessageTransaction(client, userId, friendId, content){
             { chat : [{
                 userId : new ObjectId(userId),
                 time : new Date(),
-                content : content,
+                [ contentType ] : content,
                 id : randomObjectId 
             }]
         },
