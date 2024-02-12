@@ -4,6 +4,7 @@ const {connectData, getData} = require("./connection")
 const uploadRouter = require("./routes/upload.js")
 require("dotenv").config()
 const PORT = process.env.PORT
+
 app.use(express.json())
 app.use(express.urlencoded({ extended : false}))
 app.set("view engine", "ejs")

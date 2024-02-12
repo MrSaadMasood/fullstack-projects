@@ -94,7 +94,6 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
                     "Content-Type" : "multipart/form-data"
                 }
             })
-            console.log("the response obtained after sending the image is", response)
             const { filename, id } = response.data
             sendMessageToWS(friendData, "path", filename, id )
         } catch (error) {

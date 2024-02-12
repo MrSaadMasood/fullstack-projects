@@ -19,7 +19,7 @@ exports.getUpdatedData = async(req, res)=>{
     const { id } = req.user
     try {
         const updatedData = await database.collection("users").findOne(
-            { _id : new ObjectId(id)}
+            { _id : new ObjectId(id)}, { projection : { password : 0, email : 0}}
         )
         res.json({ updatedData})
     } catch (error) {
@@ -128,6 +128,9 @@ exports.updateChatData = async (req, res)=>{
             else {
                 res.status(400).json({ error : "failed to add chat"})
             }
+        }
+        else {
+            res.status(400).json({ error : "the form was not submitted correctly"})
         }
 }
 
@@ -242,8 +245,43 @@ exports.saveChatImagePath = async (req, res)=>{
 
 exports.getChatImage = (req, res)=>{
     const { name } = req.params
-    console.log("the requst is made to get the chat images");
     const filepath = path.join(__dirname, `../uploads/chat-images/${name}`)
+    res.sendFile(filepath)
+}
+
+exports.changeBio = async(req, res)=>{
+    const { id } = req.user
+    const { bio } = req.body
+    const result = validationResult(req)
+    try {
+        if(result.isEmpty()){
+            const user = await database.collection("users").updateOne(
+                {_id : new ObjectId(id)},
+                { $set : { bio : bio}}
+            )
+            res.json({message : "the bio has been successfullly added"})    
+        }else throw new Error
+    } catch (error) {
+        res.status(400).json({ error : "bio update failed"})
+    }
+}
+
+exports.saveProfilePicturePath = async (req, res)=>{
+    const { id} = req.user
+    const { filename } = req.file
+    try {
+        const addingProfilePicture = await database.collection("users").updateOne(
+            {_id : new ObjectId(id)}, { $set : { profilePicture : filename}}
+        )
+        res.json({ message : "profile picture successfully added"})
+    } catch (error) {
+        res.status(400).json({error: "cannot update the profile picture"})
+    }
+}
+
+exports.getProfilePicture  = async (req, res)=>{
+    const { name } = req.params
+    const filepath = path.join(__dirname, `../uploads/profile-images/${name}`)
     res.sendFile(filepath)
 }
 async function getCustomData(id, type){

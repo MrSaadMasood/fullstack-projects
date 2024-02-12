@@ -9,7 +9,8 @@ import { useNavigate } from "react-router-dom";
 import server from "./api/axios";
 import { useContext } from "react";
 import { isAuth } from "./Context/authContext";
-export default function SideBar({ setOptions }){
+
+export default function SideBar({ setOptions ,  profilePictureUrl}){
     const { isAuthenticated } = useContext(isAuth)
     const { removeItem } = useLocalStorage()
     const navigate = useNavigate()
@@ -34,8 +35,7 @@ export default function SideBar({ setOptions }){
                 <button className=" w-8 sm:w-9 md:w-10" >
                     <img src="/logo.png" alt="logo"  />
                 </button>
-                <div className=" border-x-2 lg:border-y-2 lg:w-9 lg:h-0 border-gray-600 w-0 h-9" >
-                    
+                <div className=" border-x-2 lg:border-y-2 lg:w-9 lg:h-0  border-gray-600 w-0 h-9" >
                 </div>
                 <button onClick={()=> setOptions( 1 , "Chats")}>
                     <MdOutlineChatBubbleOutline size={23} />
@@ -55,8 +55,8 @@ export default function SideBar({ setOptions }){
                 <button onClick={logout}>
                     <IoMdLogOut size={23} />
                 </button>
-                <button className="h-8 w-8 rounded-full bg-blue-500">
-
+                <button onClick={()=>setOptions(6, "Profile")} className="h-8 w-8 rounded-full overflow-hidden">
+                    <img src={profilePictureUrl} alt="" width={"300px"} /> 
                 </button>
             </div>
         </div>
