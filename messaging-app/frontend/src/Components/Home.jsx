@@ -8,14 +8,14 @@ import FriendRequests from "./FriendRequests";
 import Users from "./Users";
 import Friends from "./Friends";
 import useInterceptor from "./hooks/useInterceptors";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import Profile from "./Profile";
 import GroupMessagesList from "./GroupMessagesList";
 import NewGroupForm from "./Forms/NewGroupForm";
 
 export default function Home(){
-    const { state }= useLocation()
+    // const { state }= useLocation()
     const [ optionsSelected, setOptionsSelected] = useState(1)
     const [ headerText , setHeaderText]= useState("Chats")
     const [ selectedChat, setSelectedChat ] = useState(null)
@@ -251,9 +251,9 @@ export default function Home(){
                                 </p> 
                             </div>
                             {optionsSelected === 4 && 
-                                <button className="hover:scale-105" onClick={createNewGroupForm}>
+                                <Link to={"/create-new-group"} state={{ friends : userData.friends}} className="hover:scale-105">
                                     <CiCirclePlus size={30} /> 
-                                </button>
+                                </Link>
                             }
                             
                         </div>

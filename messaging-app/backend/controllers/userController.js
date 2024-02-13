@@ -298,6 +298,46 @@ exports.deletePrevProfilePicture = (req, res)=>{
     })
 
 } 
+
+exports.getFriendsData = async (req, res)=>{
+    const {id} = req.user
+    console.log("the id is", id);
+    try {
+        const friendsData = await database.collection("users").aggregate(
+            [
+                {
+                $match: {
+                    _id: new ObjectId(id),
+                },
+                },
+                {
+                $lookup: {
+                    from: "users",
+                    localField: "friends",
+                    foreignField: "_id",
+                    as: "data",
+                },
+                },
+                {
+                $unwind: "$data",
+                },
+                {
+                $project: {
+                    _id: 0,
+                    _id: "$data._id",
+                    fullName: "$data.fullName",
+                },
+                },
+            ] 
+        ).toArray()
+        console.log("the data is ", friendsData)
+        res.json({ friendsData })
+    } catch (error) {
+        res.status(400).json({error : "could not get the friendds data"})
+    }
+}
+
+
 async function getCustomData(id, type){
     try {
         const user = await database.collection("users").findOne({ _id : new ObjectId(id)})

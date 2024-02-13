@@ -61,6 +61,10 @@ router.get("/get-profile-picture/:name", userController.getProfilePicture )
 
 router.post("/change-bio", stringValidation("bio"), userController.changeBio)
 
+router.get("/get-friends-data", userController.getFriendsData)
+
+router.post("/create-new-form", userController.createNewForm)
+
 router.delete("/delete-previous-profile-picture/:name", userController.deletePrevProfilePicture)
 
 module.exports = router

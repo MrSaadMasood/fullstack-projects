@@ -1,24 +1,33 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaCamera } from "react-icons/fa6";
+import { useNavigate } from "react-router-dom";
+import useInterceptor from "../hooks/useInterceptors";
 
 export default function NewGroupForm() {
+  const navigate = useNavigate()
   const [groupName, setGroupName] = useState('');
   const [ groupPicutre , setGroupPicture] = useState("/placeholder.png")
   const [ image , setImage ] = useState(null)
+  const [ friendsIncluded, setFriendsIncluded] = useState([]);
+  const [friendList , setFriendList ]  = useState([])
+  const axiosPrivate = useInterceptor()
   const imageRef = useRef(null)
+  
+  useEffect(()=>{
+    async function getAllFriendsData(){
+        try {
+            const response = await axiosPrivate.get(`/user/get-friends-data`)
+            console.log(response)
+            setFriendList(response.data.friendsData)
+        } catch (error) {
+            console.log("error occured while gettign the friends Data", error)            
+        }
+    }
+    
+    getAllFriendsData()
 
-  const [friends, setFriends] = useState([]);
-  const array =["aslamhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
-    "asghat",
-    "daddy",
-    "mashood",
-    "hamza",
-    "ali",
-    "arslan",
-    "saeed",
-    "hamza",
-    "jameel",
-] 
+  },[axiosPrivate])
+  
   const handleFileInputChange = (e) => {
     const imageFile = e.target.files[0];
     const url = URL.createObjectURL(imageFile)
@@ -28,25 +37,36 @@ export default function NewGroupForm() {
   };
 
   const handleAddRemoveButtonClick = (friend) => {
-    const friendIndex = friends.findIndex((f) => f === friend);
+    const friendIndex = friendsIncluded.findIndex((f) => f === friend);
 
     if (friendIndex !== -1) {
-      const updatedFriends = [...friends];
+      const updatedFriends = [... friendsIncluded];
       updatedFriends.splice(friendIndex, 1);
-      setFriends(updatedFriends);
+      setFriendsIncluded(updatedFriends);
     } else {
-      setFriends([...friends, friend]);
+      setFriendsIncluded([... friendsIncluded, friend]);
     }
   };
 
   const handleCancelClick = () => {
-    // Add logic for cancel button
-    console.log("Cancel button clicked");
+    navigate("/")
   };
 
-  const handleSubmitClick = () => {
-    // Add logic for submit button
-    console.log("Submit button clicked");
+  const handleSubmitClick = async () => {
+    const formData = new FormData()
+    formData.append("image", image)
+    formData.append("groupName", groupName)
+    formData.append("members", friendsIncluded)
+    try {
+        const respone = await axiosPrivate.post("/user/create-new-group", formData, {
+            headers : {
+                "Content-Type" : "multipart/form-data"
+            }
+        })
+    } catch (error) {
+        console.log("error occured while creating a new form", error)
+    }
+    console.log("the form data is ", Object.fromEntries(formData))
   };
 
 
@@ -87,21 +107,21 @@ export default function NewGroupForm() {
 
         {/* Friends list with add/remove buttons */}
         <div className="ml-4 overflow-y-scroll noScroll text-white mt-4 w-[20rem] sm:w-[29rem] h-[20rem] p-3 border-2 rounded-lg">
-            {array.map((friend, index) => (
+            {friendList.map((friend, index) => (
             <div
               key={index}
               className="flex items-center justify-between mb-2 border-b-2 border-gray-500 p-1"
             >
-              <span className=" w-[80%] overflow-hidden">{friend}</span>
+              <span className=" w-[80%] overflow-hidden">{friend.fullName}</span>
               <button
                 className={`p-2 ${
-                  friends.includes(friend)
+                   friendsIncluded.includes(friend._id)
                     ? "bg-red-500 hover:bg-red-600"
                     : "bg-green-500 hover:bg-green-700"
                 } text-white rounded w-20`}
-                onClick={() => handleAddRemoveButtonClick(friend)}
+                onClick={() => handleAddRemoveButtonClick(friend._id)}
               >
-                {friends.includes(friend) ? "Remove" : "Add"}
+                { friendsIncluded.includes(friend._id) ? "Remove" : "Add"}
               </button>
             </div>
           ))}
