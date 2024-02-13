@@ -9,7 +9,7 @@ import PropTypes from "prop-types"
 import useInterceptor from "./hooks/useInterceptors";
 import ErrorBox from "./ErrorBox";
 
-export default function Chat({ selectedChatSetter, chatData, friendData, userData, sendMessageToWS, chatDataSetter}){
+export default function Chat({ selectedChatSetter, chatData, friendData, userData, sendMessageToWS, chatDataSetter, friendChatImage}){
     const fileInputRef = useRef()
     const chatDiv = useRef()
     const axiosPrivate = useInterceptor()
@@ -103,7 +103,7 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
 
     return (
         <div className=" lg:w-full">
-            <ChatHeader selectedChatSetter={selectedChatSetter} friendData={friendData} />
+            <ChatHeader selectedChatSetter={selectedChatSetter} friendData={friendData} friendChatImage={friendChatImage}/>
             
             <div ref={chatDiv} className="chatbox h-[90vh] md:h-[92vh] lg:h-[82vh] p-2 pb-20 md:pb-32 lg:pb-4 relative
              bg-black w-full lg:w-full overflow-y-scroll noScroll ">

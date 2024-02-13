@@ -9,13 +9,12 @@ const storage = multer.diskStorage({
     destination : (req, file, callback)=>{
         let absolutePath;
 
-        // console.log("the request in inside here");
-        // if(req.chatImage){
-        //     absolutePath = path.join(__dirname, "../uploads/chat-images")
-        // }
-        // if(req.profileImage){
+        if(req.chatImage){
+            absolutePath = path.join(__dirname, "../uploads/chat-images")
+        }
+        if(req.profileImage){
             absolutePath = path.join(__dirname, "../uploads/profile-images")
-        // }
+        }
         callback(null, absolutePath)
     },
     filename : (req, file, callback)=>{
@@ -54,12 +53,14 @@ router.get("/get-chatlist", userController.getChatList)
 
 router.post("/add-chat-image",(req, _, next)=>{ req.chatImage = true ; next()}, upload.single("image"), userController.saveChatImagePath)
 
-router.post("/add-profile-image", (req, _, next)=>{req.profileImage = true; next()}, upload.single("image"), userController.saveProfilePicturePath)
+router.post("/add-profile-image", (req,_,next)=>{ req.profileImage = true; next()} , upload.single("image"), userController.saveProfilePicturePath)
 
 router.get("/get-chat-image/:name", userController.getChatImage )
 
 router.get("/get-profile-picture/:name", userController.getProfilePicture )
 
 router.post("/change-bio", stringValidation("bio"), userController.changeBio)
+
+router.delete("/delete-previous-profile-picture/:name", userController.deletePrevProfilePicture)
 
 module.exports = router

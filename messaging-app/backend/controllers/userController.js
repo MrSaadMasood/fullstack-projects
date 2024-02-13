@@ -3,6 +3,7 @@ const { connectData , getData} = require("../connection");
 const { validationResult } = require("express-validator");
 require("dotenv").config
 const path = require("path")
+const fs = require("fs")
 
 const transactionOptions = {
     writeConcern : { w : "majority"},
@@ -216,6 +217,7 @@ exports.getChatList = async(req, res) =>{
                     friendData: {
                       fullName: "$friendData.fullName",
                       _id : "$friendData._id",
+                      profilePicture : "$friendData.profilePicture"
                     },
                   },
                 },
@@ -268,7 +270,9 @@ exports.changeBio = async(req, res)=>{
 
 exports.saveProfilePicturePath = async (req, res)=>{
     const { id} = req.user
+    const { deletePicture } = req.body
     const { filename } = req.file
+    
     try {
         const addingProfilePicture = await database.collection("users").updateOne(
             {_id : new ObjectId(id)}, { $set : { profilePicture : filename}}
@@ -284,6 +288,16 @@ exports.getProfilePicture  = async (req, res)=>{
     const filepath = path.join(__dirname, `../uploads/profile-images/${name}`)
     res.sendFile(filepath)
 }
+exports.deletePrevProfilePicture = (req, res)=>{
+    const { name } = req.params
+    fs.unlink(`./uploads/profile-images/${name}`, (err)=>{
+        if(err){
+            return res.status(400).json({ error : "some error occured"}) 
+        }
+        res.json({ message : "picture successully deleted"})
+    })
+
+} 
 async function getCustomData(id, type){
     try {
         const user = await database.collection("users").findOne({ _id : new ObjectId(id)})

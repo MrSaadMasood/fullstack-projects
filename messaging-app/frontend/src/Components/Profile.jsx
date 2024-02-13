@@ -36,6 +36,15 @@ export default function Profile( { userData,  profilePictureUrl,  isUserChangedS
 
     async function handleImageSubmission(){
         try {
+
+            if(userData.profilePicture){
+                try {
+                    await axiosPrivate.delete(`/user/delete-previous-profile-picture/${userData.profilePicture}`)
+                } catch (error) {
+                    console.log("failed to delete the previous profile picture", error) 
+                    return
+                }
+            }
             const formData = new FormData()
             formData.append("image", image)
             const response = await axiosPrivate.post("/user/add-profile-image", formData , {

@@ -1,3 +1,4 @@
+import { CiCirclePlus } from "react-icons/ci";
 import SideBar from "./SideBar"
 import { useEffect, useState } from "react"
 import { FaList } from "react-icons/fa";
@@ -10,6 +11,8 @@ import useInterceptor from "./hooks/useInterceptors";
 import { useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import Profile from "./Profile";
+import GroupMessagesList from "./GroupMessagesList";
+import NewGroupForm from "./Forms/NewGroupForm";
 
 export default function Home(){
     const { state }= useLocation()
@@ -25,6 +28,9 @@ export default function Home(){
     const [ socket, setSocket] = useState(null)
     const [ joinedRoom, setJoinedRoom] = useState(null)
     const [ profilePictureUrl, setProfilePictureUrl ] = useState("/placeholder.png")
+    const [ friendChatImage, setFriendChatImage  ] = useState("/placeholder.png")
+    const [ newGroupMemebers, setNewGroupMembers ] = useState([])
+    const [ showNewGroupForm, setShowNewGroupForm ] = useState(false)
     const axiosPrivate = useInterceptor()
     const display = selectedChat ? "hidden" : ""    
     console.log("the user data ", profilePictureUrl)
@@ -207,51 +213,111 @@ export default function Home(){
         })
 
     }
+
+    function chatFriendImageSetter(url){
+        setFriendChatImage(url)
+    }
+
+    function createNewGroupForm(){
+        setShowNewGroupForm(true)
+    }
     return (
         <div>
-        <div className=" lg:flex ">
-            <SideBar setOptions={selectedOptionSetter}  profilePictureUrl={ profilePictureUrl}/>
+        {/* {showNewGroupForm && 
+            <NewGroupForm />
+        } */}
+        <div className="lg:flex">
+            <SideBar 
+                setOptions={selectedOptionSetter}  
+                profilePictureUrl={profilePictureUrl}
+            />
             
             {optionsSelected === 6 &&
-                <Profile userData={userData}  profilePictureUrl={ profilePictureUrl}  isUserChangedSetter={isUserChangedSetter} />
+                <Profile 
+                    userData={userData}  
+                    profilePictureUrl={profilePictureUrl}  
+                    isUserChangedSetter={isUserChangedSetter} 
+                />
             } 
             {optionsSelected !== 6 &&
                 <div className={`${display} lg:inline h-screen w-full lg:ml-16 lg:w-[23rem]  bg-black lg:border-r-2
                 lg:border-[#555555] text-white`}>
-                    <div className=" border-b-2 border-[#555555] h-24 lg:h-20 flex justify-start items-center">
-                            <div className=" flex justify-around items-center h-auto w-auto ml-5">
+                    <div className="border-b-2 border-[#555555] h-24 lg:h-20 flex justify-start items-center">
+                        <div className="flex justify-between items-center h-auto w-[90%] ml-5">
+                            <div className="flex justify-center items-center">
                                 <FaList size={18} />
-                                <p className=" font-bold text-xl ml-3">
-                                {headerText} 
+                                <p className="font-bold text-xl ml-3">
+                                    {headerText} 
                                 </p> 
                             </div>
+                            {optionsSelected === 4 && 
+                                <button className="hover:scale-105" onClick={createNewGroupForm}>
+                                    <CiCirclePlus size={30} /> 
+                                </button>
+                            }
+                            
+                        </div>
+                        
                     </div>
 
-                    <div className=" bg-[#1b1b1b] w-full h-[87vh] overflow-y-scroll noScroll">
-
-                        {optionsSelected === 1 && chatList.map((chat, index)=>{
-                            if(optionsSelected === 1){
-                                return <Messages data={ chat} selectedChatSetter={selectedChatSetter} type={1} selectedChat={selectedChat}
-                                getChatData={getChatData} />
+                    <div className="bg-[#1b1b1b] w-full lg:w-[22rem] h-[87vh] overflow-y-scroll noScroll">
+                        {optionsSelected === 1 && chatList.map((chat, index) => {
+                            if (optionsSelected === 1) {
+                                return (
+                                    <Messages 
+                                        key={index}
+                                        data={chat} 
+                                        selectedChatSetter={selectedChatSetter} 
+                                        type={1}
+                                        selectedChat={selectedChat}
+                                        getChatData={getChatData}  
+                                        chatFriendImageSetter={chatFriendImageSetter}
+                                    />
+                                ) 
                             }
                         })}
-                        {optionsSelected !== 1 && dataArray.map( data=>{
-                            if(optionsSelected === 2){
-                                return <Friends data={ data} selectedChatSetter={selectedChatSetter}
-                                selectedOptionSetter={selectedOptionSetter} isUserChangedSetter={isUserChangedSetter}
-                                removeFriendFromDataArray={removeFollowRequestAndFriend} getChatData={getChatData} />
+                        {optionsSelected !== 1 && dataArray.map((data, index) => {
+                            if (optionsSelected === 2) {
+                                return (
+                                    <Friends 
+                                        key={index}
+                                        data={data} 
+                                        selectedChatSetter={selectedChatSetter}
+                                        selectedOptionSetter={selectedOptionSetter} 
+                                        isUserChangedSetter={isUserChangedSetter}
+                                        removeFriendFromDataArray={removeFollowRequestAndFriend} 
+                                        getChatData={getChatData} 
+                                    />
+                                ) 
                             }
-                            if(optionsSelected === 3){
-                                return <FriendRequests data={ data} isUserChangedSetter={isUserChangedSetter}
-                                removeFollowRequest={removeFollowRequestAndFriend} />
+                            if (optionsSelected === 3) {
+                                return (
+                                    <FriendRequests 
+                                        key={index}
+                                        data={data} 
+                                        isUserChangedSetter={isUserChangedSetter}
+                                        removeFollowRequest={removeFollowRequestAndFriend}
+                                    />
+                                ) 
                             }
-                            if(optionsSelected === 4){
-                                return <Messages data={ data} selectedChatSetter={selectedChatSetter} type={2} />
+                            if (optionsSelected === 4) {
+                                return (
+                                    <GroupMessagesList 
+                                        key={index}
+                                    />
+                                ) 
                             }
-                            if(optionsSelected === 5 ){
-                                if(userData._id !== data._id && userData.friends.includes(data._id) === false){
-                                    return <Users data={ data} userData={userData} addToSentRequests={addToSentRequests}
-                                    isUserChangedSetter={isUserChangedSetter} />
+                            if (optionsSelected === 5) {
+                                if (userData._id !== data._id && userData.friends.includes(data._id) === false) {
+                                    return (
+                                        <Users 
+                                            key={index}
+                                            data={data} 
+                                            userData={userData} 
+                                            addToSentRequests={addToSentRequests}
+                                            isUserChangedSetter={isUserChangedSetter} 
+                                        />
+                                    ) 
                                 }
                             }
                         })}
@@ -259,25 +325,24 @@ export default function Home(){
                 </div>
             }
             
-            {optionsSelected !== 6 && selectedChat && <Chat selectedChatSetter={selectedChatSetter} chatData={chatData} friendData={friendData}
-            userData={userData} sendMessageToWS={sendMessageToWS} chatDataSetter={chatDataSetter} />}
+            {optionsSelected !== 6 && selectedChat && 
+            <Chat 
+                selectedChatSetter={selectedChatSetter}
+                chatData={chatData} 
+                friendData={friendData} 
+                userData={userData} 
+                sendMessageToWS={sendMessageToWS} 
+                chatDataSetter={chatDataSetter} 
+                friendChatImage={friendChatImage}
+            />}
             {optionsSelected !==6 && !selectedChat &&
-                <div className=" hidden bg-black h-screen w-full lg:flex justify-center items-center text-white text-2xl">
+                <div className="hidden bg-black h-screen w-full lg:flex justify-center items-center text-white text-2xl">
                     <p>
                         No Chat Selected
                     </p>
                 </div>
             }
         </div>
-        {/* <div>
-
-            <div className="fixed top-0 left-0 w-[100%] h-[100%] bg-black opacity-60 z-30">
-            </div>
-                <div className="fixed top-[30%] left-[40%] w-[20rem] h-[20rem] center z-40 bg-red-200">
-                    hello
-                </div>
-        </div> */}
         </div>
-
     )
 }

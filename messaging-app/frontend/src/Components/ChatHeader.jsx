@@ -1,6 +1,7 @@
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 
-export default function ChatHeader({ selectedChatSetter, friendData }){
+export default function ChatHeader({ selectedChatSetter, friendData,  friendChatImage}){
+    console.log("the frind data sent is", friendData)
     function goBack(){
         selectedChatSetter(null)
     }
@@ -12,8 +13,8 @@ export default function ChatHeader({ selectedChatSetter, friendData }){
                     <IoArrowBackCircleOutline size={25} />
                 </button>
                 <div className=" flex justify-center items-center">
-                    <div className=" h-10 md:h-14 w-10 md:w-14 rounded-full bg-blue-400 ml-6">
-
+                    <div className=" h-10 md:h-14 w-10 md:w-14 rounded-full ml-6 overflow-hidden">
+                        <img src={friendChatImage} alt="" width={"300px"} />
                     </div>
                     <p className=" ml-3 sm:text-lg md:text-xl">
                         { friendData.fullName}
