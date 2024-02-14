@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import useInterceptor from "./hooks/useInterceptors";
 import axios from "axios";
 
-export default function Messages({data, selectedChatSetter, type = 1 , getChatData,  chatFriendImageSetter}){
+export default function Messages({data, selectedChatSetter , getChatData,  chatFriendImageSetter}){
     const [ picture , setPicture ] = useState("/placeholder.png")
     const axiosPrivate = useInterceptor()
     const dateObject = new Date(data?.lastMessage?.time)
@@ -29,7 +29,8 @@ export default function Messages({data, selectedChatSetter, type = 1 , getChatDa
 
     return (
         <button className={` hover:bg-[#343434] w-full p-3 flex lg:flex justify-between items-center border-b-2 border-[#555555] h-28 lg:h-20`}
-        onClick={()=>{ selectedChatSetter(data.friendData.fullName); getChatData(data.friendData); chatFriendImageSetter(picture)}}>
+        onClick={()=>{ selectedChatSetter("normal"); getChatData(data.friendData, "normal");
+        chatFriendImageSetter(picture)}}>
             <div className=" flex justify-center items-center">
                 <div className=" w-14 h-14 lg:w-10 lg:h-10 rounded-full overflow-hidden">
                     <img src={picture} alt="" width={"300px"} />

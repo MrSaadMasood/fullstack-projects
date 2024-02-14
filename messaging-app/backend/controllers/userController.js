@@ -238,7 +238,7 @@ exports.saveChatImagePath = async (req, res)=>{
     const result = await updateChatMessageTransaction(client, id, friendId, filePath ,"path")
 
     if(result){
-        res.json({ filename : req.file.filename, id : result})
+        res.json({ filename : filename, id : result})
     }
     else {
         res.status(400).json({ error : "failed to add image"})
@@ -270,7 +270,6 @@ exports.changeBio = async(req, res)=>{
 
 exports.saveProfilePicturePath = async (req, res)=>{
     const { id} = req.user
-    const { deletePicture } = req.body
     const { filename } = req.file
     
     try {
@@ -338,7 +337,6 @@ exports.getFriendsData = async (req, res)=>{
 
 exports.createNewForm = async (req, res)=>{
     try {
-        console.log("the request is here");
         const { members, groupName} = req.body
         const { id} = req.user
         let filename
@@ -360,6 +358,143 @@ exports.createNewForm = async (req, res)=>{
     }
 }
 
+exports.getGroupChats = async (req, res)=>{
+    const {id } = req.user
+    try {
+        const groupChats = await database.collection("users").aggregate(
+            [
+                {
+                  $match: {
+                    _id : new ObjectId(id)
+                  }
+                },
+                { $unwind : "$groupChats"},
+                {
+                  $lookup: {
+                    from: "groupChats",
+                    localField: "groupChats.collectionId",
+                    foreignField: "_id",
+                    as: "chats"
+                  }
+                },
+                { $addFields: {
+                  chat: {
+                    $arrayElemAt : ["$chats.chat", -1]
+                  }
+                }
+                },
+                {
+                  $addFields: {
+                    lastMessage: {
+                      $arrayElemAt : ["$chat", -1]
+                    }   
+                  }
+                },
+                {
+                  $lookup: {
+                    from: "users",
+                    localField: "lastMessage.userId",
+                    foreignField: "_id",
+                    as: "senderDataArray"
+                  }
+                },
+                {
+                  $addFields: {
+                    senderData: {
+                      $arrayElemAt : ["$senderDataArray", -1]
+                    }
+                  }
+                },
+                {
+                  $project : {
+                    _id : "$groupChats.collectionId",
+                    groupName : "$groupChats.groupName",
+                    groupImage : "$groupChats.groupImage",
+                    lastMessage : "$lastMessage",
+                    senderName : "$senderData.fullName"
+                  }
+                }
+              ]
+        ).toArray()
+        res.json({ groupChats })
+    } catch (error) {
+        res.status(400).json({ error : "cannot get the group chats list"})
+    }
+}
+
+exports.getGroupPicture = (req, res)=>{
+    const { name } = req.params
+    const filepath = path.join(__dirname, `../uploads/group-images/${name}`)
+    res.sendFile(filepath)
+}
+
+exports.getGroupChatData = async(req, res)=>{
+    const { chatId} = req.params
+    try {
+        const groupChatData = await database.collection("groupChats").aggregate(
+            [
+                {
+                  $match: {
+                    _id: new ObjectId(chatId),
+                  },
+                },
+                {
+                  $unwind: "$chat",
+                },
+                {
+                  $lookup: {
+                    from: "users",
+                    localField: "chat.userId",
+                    foreignField: "_id",
+                    as: "senderData",
+                  },
+                },
+                {
+                  $addFields: {
+                    sender: {
+                      $arrayElemAt: ["$senderData", -1],
+                    },
+                  },
+                },
+                {
+                  $project: {
+                    _id: 0,
+                    chat: "$chat",
+                    senderName: "$sender.fullName",
+                  },
+                },
+              ]
+        ).toArray()
+        res.json({ groupChatData})
+    } catch (error) {
+        res.status(400).json({ error : "failed to get the group chat data"})
+    }
+}
+
+exports.saveGroupChatImage = async(req, res)=>{
+    const { id} = req.user
+    const { filename } = req.file
+    const { groupId } = req.body
+    const result = await updateGroupChat(groupId, id, "path", filename)
+    if(result){
+        res.json({ filename, id : result})
+    }
+    else{
+        res.status(400).json({error : "failed to update the group chat"})
+    }
+}
+exports.updateGroupChatData = async(req, res)=>{
+    const { groupId, content} = req.body
+    const { id} = req.user
+    const result = await updateGroupChat(groupId, id, "content", content)
+    
+    if(result){
+            res.json({ id : result})
+        }
+    else{
+            res.status(400).json({error : "failed to update the group chat"})
+        }
+}
 async function getCustomData(id, type){
     try {
         const user = await database.collection("users").findOne({ _id : new ObjectId(id)})
@@ -523,7 +658,6 @@ async function updateChatMessageTransaction(client, userId, friendId, content, c
                         },
                         transactionOptions
                     )
-                    console.log("the chat inserted is ", chat);
                     await session.commitTransaction()
                     return randomObjectId.toString()
                 }
@@ -585,10 +719,10 @@ async function groupChatTransaction(client, userId, members, groupName, groupIma
         const database = client.db("chat-app")
         const randomId = new ObjectId()
         const newGroup = await database.collection("groupChats").insertOne(
-            { 
+            {   _id : randomId,
                 chat : [
                     {
-                        id : randomId,
+                        id : new ObjectId(),
                         userId : new ObjectId(userId),
                         time : new Date(),
                         content : "You have been added in the group."
@@ -596,7 +730,7 @@ async function groupChatTransaction(client, userId, members, groupName, groupIma
                 ]
              }
         )
-
+            console.log(newGroup)
         const updatingUsers = await database.collection("users").updateMany(
             { _id : { $in : members }},
             {
@@ -614,7 +748,6 @@ async function groupChatTransaction(client, userId, members, groupName, groupIma
                 }
             }
         )
-        console.log("the updatedusers are ", updatingUsers);
         session.commitTransaction()
         return true
     } catch (error) {
@@ -633,4 +766,26 @@ function convertStringArrayToObjectIdsArray(array, extraMemberToAdd){
             return new ObjectId(member)
         })
         return membersObjectIds
+}
+
+async function updateGroupChat( collectionId, userId, contentType, content){
+    try {
+        const randomId = new ObjectId()
+        const updated = await database.collection("groupChats").updateOne(
+            {
+                _id : new ObjectId(collectionId)
+            },
+            { $push : {
+                chat : {
+                    [contentType ] : content,
+                    id : randomId,
+                    userId : new ObjectId(userId),
+                    time : new Date()
+                }
+            }}
+        )
+        return randomId.toString()
+    } catch (error) {
+        return false
+    }
 }

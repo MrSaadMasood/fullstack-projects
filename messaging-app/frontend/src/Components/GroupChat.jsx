@@ -1,21 +1,26 @@
+import { useEffect, useRef, useState } from "react"
+import ChatHeader from "./ChatHeader"
+import ErrorBox from "./ErrorBox"
+import ChatForm from "./Forms/ChatForm"
+import LeftSideBox from "./LeftSideBox"
+import RightSideBox from "./RightSideBox"
+import useInterceptor from "./hooks/useInterceptors"
 
-import ChatHeader from "./ChatHeader";
-import LeftSideBox from "./LeftSideBox";
-import RightSideBox from "./RightSideBox";
-import { useEffect, useRef, useState } from "react";
-import PropTypes from "prop-types"
-import useInterceptor from "./hooks/useInterceptors";
-import ErrorBox from "./ErrorBox";
-import ChatForm from "./Forms/ChatForm";
-
-export default function Chat({ selectedChatSetter, chatData, friendData, userData, sendMessageToWS, chatDataSetter, friendChatImage}){
-    const fileInputRef = useRef()
-    const chatDiv = useRef()
+export default function GroupChat({
+    data,
+    selectedChatSetter,
+    groupData,
+    groupImage,
+    userData,
+    chatDataSetter,
+    sendMessageToWS
+}){
+    const chatDiv = useRef(null)
+    console.log("the data is ", data);
     const axiosPrivate = useInterceptor()
     // const [ isScrolled, setIsScrolled] = useState(false)
     // const [ arrayChanged, setArrayChanged] = useState(false)
     const [ input , setInput ] = useState("")
-    const realChat = chatData?.chat
 
     useEffect(()=>{
         const div = chatDiv.current
@@ -25,7 +30,7 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
         
         scrollToBottom()
 
-    },[chatData])
+    },[data])
     
     // useEffect(()=>{
 
@@ -53,8 +58,9 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
     async function handleSubmit(e){
         e.preventDefault()
         try {
-            const response = await axiosPrivate.post("/user/chat-data", { friendId : friendData._id, content : input })
-            sendMessageToWS( friendData ,input, response.data.id)
+            const response = await axiosPrivate.post("/user/group-data", { groupId : groupData._id, content : input })
+            console.log("the respoinse is ", response.data)
+            sendMessageToWS(groupData ,input, response.data.id, "group")
             setInput("")
         } catch (error) {
            console.log("error occured while sending the message", error) 
@@ -65,37 +71,47 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
     async function handleFileChange(e){
         const image = e.target.files[0]
         if(image.size > 500000){
-            return chatDataSetter({content : "Image should be less than 500kb", userId : userData._id, time : new Date(), error : true})
+            const data = { senderName : "Saad", 
+                            chat : {
+                                content : "Image should be less than 500kb",
+                                userId : userData._id, 
+                                time : new Date(), 
+                                error : true
+                            }
+         } 
+            return chatDataSetter(data, "group")
         }
         try {
-            const response = await axiosPrivate.post("/user/add-chat-image", {friendId : friendData._id,  image }, {
+            const response = await axiosPrivate.post("/user/add-group-chat-image", {groupId : groupData._id,  image }, {
                 headers : {
                     "Content-Type" : "multipart/form-data"
                 }
             })
             const { filename, id } = response.data
-            sendMessageToWS(friendData, filename, id, "normal","path" )
+            console.log("the response after sending the image is", response.data)
+            sendMessageToWS(groupData, filename, id, "group", "path" )
         } catch (error) {
             console.log("error occured while sending the image to the server", error)
         }
     }
-
     return (
         <div className=" lg:w-full">
-            <ChatHeader selectedChatSetter={selectedChatSetter} friendData={friendData} friendChatImage={friendChatImage}/>
+            <ChatHeader selectedChatSetter={selectedChatSetter} friendData={groupData} friendChatImage={groupImage}/>
             
             <div ref={chatDiv} className="chatbox h-[90vh] md:h-[92vh] lg:h-[82vh] p-2 pb-20 md:pb-32 lg:pb-4 relative
              bg-black w-full lg:w-full overflow-y-scroll noScroll ">
-                {realChat?.map((chat)=>{
+                {data.map((chatData, index)=>{
                     
-                        if(chat.error && chat.userId === userData._id){
-                            return <ErrorBox data={chat} />
+                        if(chatData.chat.error && chatData.chat.userId === userData._id){
+                            return <ErrorBox key={index} data={chatData.chat} />
                         }
-                        if(chat.userId === userData._id){
-                            return <RightSideBox data={chat} />
+                        if(chatData.chat.userId === userData._id){
+                            return <RightSideBox key={index} data={chatData.chat}
+                            chatType="group" sender={chatData.senderName} />
                         }
                         else{
-                            return <LeftSideBox data={chat} />
+                            return <LeftSideBox
+                            chatType="group" key={index} data={chatData.chat} sender={chatData.senderName} />
                         }
                 })}
             </div>

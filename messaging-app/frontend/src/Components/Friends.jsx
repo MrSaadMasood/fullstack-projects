@@ -9,7 +9,7 @@ export default function Friends({ data,selectedChatSetter, selectedOptionSetter,
         console.log("the friend is now being messaged");
         selectedOptionSetter(1, "Chats")
         selectedChatSetter(data.fullName)
-        getChatData(data)
+        getChatData(data, "normal")
     }
 
     async function removeFriend(id){

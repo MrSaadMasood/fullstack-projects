@@ -84,6 +84,7 @@ export default function NewGroupForm() {
                 "Content-Type" : "multipart/form-data"
             }
         })
+        navigate("/")
     } catch (error) {
         console.log("error occured while creating a new form", error)
     }
@@ -103,6 +104,7 @@ export default function NewGroupForm() {
               id="image"
               name="image"
               className="hidden"
+              accept=".jpg"
               onChange={handleFileInputChange}
               ref={imageRef}
             />

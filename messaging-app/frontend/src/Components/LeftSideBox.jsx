@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import useInterceptor from "./hooks/useInterceptors"
 
-export default function LeftSideBox( { data} ){
+export default function LeftSideBox( { data, sender, chatType = "normal"} ){
     const axiosPrivate = useInterceptor()
     const [ url, setUrl ] = useState("")
     const dateObject = new Date(data.time)
@@ -9,9 +9,16 @@ export default function LeftSideBox( { data} ){
     useEffect(()=>{
         async function getChatImage(image){
             try {
-                const response = await axiosPrivate.get(`/user/get-chat-image/${image}`, { responseType : "blob"})
-                const imagerUrl = URL.createObjectURL(response.data)
-                setUrl(imagerUrl)
+                if(chatType === "normal"){
+                    const response = await axiosPrivate.get(`/user/get-chat-image/${image}`, { responseType : "blob"})
+                    const imagerUrl = URL.createObjectURL(response.data)
+                    setUrl(imagerUrl)
+                }
+                if(chatType === "group"){
+                    const response = await axiosPrivate.get(`/user/group-picture/${image}`, { responseType : "blob"})
+                    const imagerUrl = URL.createObjectURL(response.data)
+                    setUrl(imagerUrl)
+                }
             } catch (error) {
                 return "/pattern.jpg"
             }
@@ -24,7 +31,7 @@ export default function LeftSideBox( { data} ){
     return ()=>{
         URL.revokeObjectURL(url)
     }
-    }, [data, axiosPrivate])
+    }, [data, axiosPrivate, chatType])
 
     return(
         <div  className=" text-white text-base w-[100%] h-auto mb-2 
@@ -34,6 +41,11 @@ export default function LeftSideBox( { data} ){
                     <p>
                         {dateObject.toDateString()}
                     </p>
+                    {sender && 
+                        <p className=" ml-2">
+                            {sender}
+                        </p>
+                    }
                 </div>
                 {data.content && 
                     <p className=" pt-1 pb-1 pl-2 pr-2  bg-orange-600 h-auto w-auto break-all 

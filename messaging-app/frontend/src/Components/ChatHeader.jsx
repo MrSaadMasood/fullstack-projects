@@ -17,7 +17,7 @@ export default function ChatHeader({ selectedChatSetter, friendData,  friendChat
                         <img src={friendChatImage} alt="" width={"300px"} />
                     </div>
                     <p className=" ml-3 sm:text-lg md:text-xl">
-                        { friendData.fullName}
+                        { friendData.fullName || friendData.groupName}
                     </p>
                 </div>
             </div>

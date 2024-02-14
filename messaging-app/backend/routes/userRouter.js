@@ -68,6 +68,16 @@ router.get("/get-friends-data", userController.getFriendsData)
 
 router.post("/create-new-group", (req,_,next)=>{ req.groupImage = true; next()}, upload.single("image") , userController.createNewForm)
 
+router.get("/group-chats", userController.getGroupChats)
+
+router.get("/group-picture/:name", userController.getGroupPicture)
+
+router.get("/get-group-chat/:chatId", userController.getGroupChatData)
+
+router.post("/add-group-chat-image", (req,_,next)=>{ req.groupImage = true; next()}, upload.single("image"), userController.saveGroupChatImage)
+
+router.post("/group-data", stringValidation("content"), userController.updateGroupChatData)
+
 router.delete("/delete-previous-profile-picture/:name", userController.deletePrevProfilePicture)
 
 module.exports = router

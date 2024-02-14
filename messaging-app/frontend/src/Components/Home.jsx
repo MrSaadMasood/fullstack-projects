@@ -13,6 +13,7 @@ import { io } from "socket.io-client";
 import Profile from "./Profile";
 import GroupMessagesList from "./GroupMessagesList";
 import NewGroupForm from "./Forms/NewGroupForm";
+import GroupChat from "./GroupChat";
 
 export default function Home(){
     // const { state }= useLocation()
@@ -24,16 +25,16 @@ export default function Home(){
     const [ chatList, setChatList] = useState([])
     const [ isUserChanged, setIsUserChanged] = useState(false)
     const [ chatData, setChatData] = useState({ chat : []})
+    const [ groupChatData, setGroupChatData] = useState([])
     const [ friendData, setFriendData] = useState({})
     const [ socket, setSocket] = useState(null)
     const [ joinedRoom, setJoinedRoom] = useState(null)
+    const [ groupData, setGroupData ] = useState({})
     const [ profilePictureUrl, setProfilePictureUrl ] = useState("/placeholder.png")
     const [ friendChatImage, setFriendChatImage  ] = useState("/placeholder.png")
-    const [ newGroupMemebers, setNewGroupMembers ] = useState([])
-    const [ showNewGroupForm, setShowNewGroupForm ] = useState(false)
     const axiosPrivate = useInterceptor()
     const display = selectedChat ? "hidden" : ""    
-    console.log("the user data ", profilePictureUrl)
+    console.log("the chatData is ", dataArray)
 
     useEffect(()=>{
         
@@ -84,6 +85,15 @@ export default function Home(){
                     setDataArray([])
                 })
             }
+        if(optionsSelected === 4 ){
+                axiosPrivate.get("/user/group-chats").then(res=>{
+                    console.log("the group chats are ", res.data.groupChats)
+                    setDataArray(res.data.groupChats)
+                }).catch(error=>{
+                    console.log("failed to get the group chats ", error)
+                    setDataArray([])
+                })
+        }
 
         if(optionsSelected === 5){
             axiosPrivate.get("/user/get-users").then(res=>{
@@ -159,73 +169,123 @@ export default function Home(){
         return `room${sortedArray[0]},${sortedArray[1]}`
     }
 
-    function getChatData(data){
-        console.log("the data passed in to get the chat data is", data);
+    function getChatData(data, type){
 
-        axiosPrivate.get(`/user/get-chat/${data._id}`, ).then(res=>{
-            console.log("the response obtained is", res.data)
-            setChatData(res.data.chatData)
-        }).catch(error=>{
-            console.log("error occured while getting the chat", error)
-            setChatData({ chat : []})
-        })
+        if(type === "normal"){
+            axiosPrivate.get(`/user/get-chat/${data._id}`).then(res=>{
+                console.log("the response obtained is", res.data)
+                setChatData(res.data.chatData)
+            }).catch(error=>{
+                console.log("error occured while getting the chat", error)
+                setChatData({ chat : []})
+            })
 
-        const roomId = generateRoomId(userData._id, data._id)
-        socket.emit("join-room", joinedRoom , roomId)
+            const roomId = generateRoomId(userData._id, data._id)
+            socket.emit("join-room", joinedRoom , roomId)
 
-        setFriendData(data)
+            setFriendData(data)
+        }
+
+        if(type === "group"){
+            axiosPrivate.get(`/user/get-group-chat/${data._id}`).then(res=>{
+                console.log("the response is", res.data)
+                setGroupChatData(res.data.groupChatData)
+            }).catch(error=>{
+                console.log("error occured while getting the group chat data", error)
+                setGroupChatData([])
+            })
+
+            const roomId = generateRoomId(data._id, data.groupName)
+            socket.emit("join-room", joinedRoom, roomId)
+
+            setGroupData(data)
+        }
     }
     
-    function chatListArraySetter(id, data){
+    function chatListArraySetter(id, data, chatType = "normal"){
 
-        setChatList((prevData)=>{
-            const modified = prevData.map((item)=>{
-                if(item.friendData._id === id){
+        if(chatType === "normal"){
+            setChatList((prevData)=>{
+                const modified = prevData.map((item)=>{
+                    if(item.friendData._id === id){
+                        item.lastMessage = data
+                    }
+                    return item
+                })
+                return modified
+            })
+        }
+
+        if(chatType === "group"){
+           console.log("the data array is ", dataArray) 
+           setDataArray((prevData)=>{
+            const modified = prevData.map(item=>{
+                if(item._id === id){
                     item.lastMessage = data
                 }
                 return item
             })
             return modified
-        })
+           })
+        }
     }
-    function sendMessageToWS(friendData, type = "content", content, contentId){
+
+    function sendMessageToWS(sentData, content, contentId, chatType = "normal", type = "content"){
        
         const data = { 
                 [type] : content, 
                 id : contentId,
                 time : new Date(),
                 userId : userData._id}
-        
-        chatDataSetter(data)
-        chatListArraySetter(friendData._id, data)
 
-        socket.emit("send-message", joinedRoom, data )
+        if(chatType === "normal"){
+            chatDataSetter(data)
+            chatListArraySetter(sentData._id, data)
+            socket.emit("send-message", joinedRoom, data )
+        }
+
+        if(chatType === "group"){
+            const groupChatData = { 
+                sender : userData.fullName,
+                chat : data
+            }
+            chatDataSetter(groupChatData, "group")
+            sentData.lastMessage = data
+            console.log("sent data modified is ", sentData)
+            socket.emit("send-message", joinedRoom, groupChatData )
+        }
+
     }
 
-    function chatDataSetter(data){
+    function chatDataSetter(data, type = "normal"){
 
-        setChatData((prevChatData)=>{
-            const newArray = [...prevChatData.chat, data ]
-            return {
-                ...prevChatData,
-                chat : newArray
-            }
-        })
+        if(type === "normal"){
+            setChatData((prevChatData)=>{
+                const newArray = [...prevChatData.chat, data ]
+                return {
+                    ...prevChatData,
+                    chat : newArray
+                }
+            })
 
+        }
+        if(type === "group"){
+            setGroupChatData((prevData)=>{
+                const array = [...prevData]
+                array.push(data)
+                return [
+                    ...array
+                ]
+            })
+        }
     }
 
     function chatFriendImageSetter(url){
         setFriendChatImage(url)
     }
 
-    function createNewGroupForm(){
-        setShowNewGroupForm(true)
-    }
     return (
         <div>
-        {/* {showNewGroupForm && 
-            <NewGroupForm />
-        } */}
         <div className="lg:flex">
             <SideBar 
                 setOptions={selectedOptionSetter}  
@@ -268,8 +328,6 @@ export default function Home(){
                                         key={index}
                                         data={chat} 
                                         selectedChatSetter={selectedChatSetter} 
-                                        type={1}
-                                        selectedChat={selectedChat}
                                         getChatData={getChatData}  
                                         chatFriendImageSetter={chatFriendImageSetter}
                                     />
@@ -304,6 +362,11 @@ export default function Home(){
                                 return (
                                     <GroupMessagesList 
                                         key={index}
+                                        data={data}
+                                        userData={userData}
+                                        selectedChatSetter={selectedChatSetter} 
+                                        getChatData={getChatData}  
+                                        chatFriendImageSetter={chatFriendImageSetter}
                                     />
                                 ) 
                             }
@@ -325,7 +388,7 @@ export default function Home(){
                 </div>
             }
             
-            {optionsSelected !== 6 && selectedChat && 
+            {optionsSelected !== 6 && selectedChat === "normal" && 
             <Chat 
                 selectedChatSetter={selectedChatSetter}
                 chatData={chatData} 
@@ -334,6 +397,16 @@ export default function Home(){
                 sendMessageToWS={sendMessageToWS} 
                 chatDataSetter={chatDataSetter} 
                 friendChatImage={friendChatImage}
+            />}
+            {optionsSelected !== 6 && selectedChat === "group" &&
+            <GroupChat
+            userData={userData}
+            data={groupChatData}
+            groupImage={friendChatImage}
+            selectedChatSetter={selectedChatSetter}
+            groupData={groupData}
+            chatDataSetter={chatDataSetter}
+            sendMessageToWS={sendMessageToWS}
             />}
             {optionsSelected !==6 && !selectedChat &&
                 <div className="hidden bg-black h-screen w-full lg:flex justify-center items-center text-white text-2xl">
