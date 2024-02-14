@@ -47,6 +47,8 @@ db.createCollection(
                         }
                     },
                     groupChats : {
+                        bsonType : "array",
+                        items : {
                         bsonType : "object",
                         required : ["id","members", "admins", "collectionId" ],
                         properties : {
@@ -69,6 +71,10 @@ db.createCollection(
                                 bsonType : "objectId"
                             }
                         } 
+
+                        }
+
+                    
                     },
                     profilePicture : {
                         bsonType : "string"
@@ -129,7 +135,7 @@ db.createCollection(
                     bsonType : "array",
                     items : {
                         bsonType : "object",
-                        required : ["id", "userId", "content", "time"],
+                        required : ["id", "userId", "time"],
                         properties : {
                             id : {
                                 bsonType : "objectId"
@@ -139,6 +145,9 @@ db.createCollection(
                             },
                             content : {
                                 bsonType : "string"
+                            },
+                            path : {
+                                bsonType : "string",
                             },
                             time : {
                                 bsonType : "date"

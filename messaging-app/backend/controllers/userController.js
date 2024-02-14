@@ -330,13 +330,35 @@ exports.getFriendsData = async (req, res)=>{
                 },
             ] 
         ).toArray()
-        console.log("the data is ", friendsData)
         res.json({ friendsData })
     } catch (error) {
         res.status(400).json({error : "could not get the friendds data"})
     }
 }
 
+exports.createNewForm = async (req, res)=>{
+    try {
+        console.log("the request is here");
+        const { members, groupName} = req.body
+        const { id} = req.user
+        let filename
+        if(req.file){
+            filename = req.file.filename
+        }
+
+        const membersObjectIds = convertStringArrayToObjectIdsArray(members, id)
+        const client = new MongoClient(process.env.MONGO_URL)
+        const result = await groupChatTransaction(client,id , membersObjectIds, groupName, filename )
+        if(result) {
+            res.json({ message : "the group is successfully created"})
+        }
+        else {
+            throw new Error
+        }
+    } catch (error) {
+        res.status(400).json({error : "failed to create a new group"})
+    }
+}
 
 async function getCustomData(id, type){
     try {
@@ -553,4 +575,62 @@ async function updateUserNormalChat(database, userId ,friendId, chatId){
         console.log("failed to add to the chat", error)
         return false
     }
+}
+
+async function groupChatTransaction(client, userId, members, groupName, groupImage){
+    const filename = groupImage ? groupImage : null
+    const session = client.startSession()
+    try {
+        session.startTransaction()
+        const database = client.db("chat-app")
+        const randomId = new ObjectId()
+        const newGroup = await database.collection("groupChats").insertOne(
+            { 
+                chat : [
+                    {
+                        id : randomId,
+                        userId : new ObjectId(userId),
+                        time : new Date(),
+                        content : "You have been added in the group."
+                    }
+                ]
+             }
+        )
+
+        const updatingUsers = await database.collection("users").updateMany(
+            { _id : { $in : members }},
+            {
+                $push : {
+                    groupChats : { 
+                            id : new ObjectId(),
+                            members : members,
+                            admins : [
+                                new ObjectId(userId)
+                            ],
+                            collectionId : new ObjectId(randomId),
+                            groupName : groupName,
+                            groupImage : filename
+                    }
+                }
+            }
+        )
+        console.log("the updatedusers are ", updatingUsers);
+        session.commitTransaction()
+        return true
+    } catch (error) {
+        session.abortTransaction()
+        return false
+    }
+    finally {
+        session.endSession()
+    }
+}
+
+function convertStringArrayToObjectIdsArray(array, extraMemberToAdd){
+        const parsedMembers = JSON.parse(array)
+        parsedMembers.push(extraMemberToAdd)
+        const membersObjectIds = parsedMembers.map(member =>{
+            return new ObjectId(member)
+        })
+        return membersObjectIds
 }

@@ -5,10 +5,12 @@ import useInterceptor from "../hooks/useInterceptors";
 
 export default function NewGroupForm() {
   const navigate = useNavigate()
-  const [groupName, setGroupName] = useState('');
+  const [groupName, setGroupName] = useState("");
   const [ groupPicutre , setGroupPicture] = useState("/placeholder.png")
   const [ image , setImage ] = useState(null)
   const [ friendsIncluded, setFriendsIncluded] = useState([]);
+  const [ errorDiv, setErrorDiv] = useState(false)
+  const [ errorMessage , setErrorMessage] = useState("")
   const [friendList , setFriendList ]  = useState([])
   const axiosPrivate = useInterceptor()
   const imageRef = useRef(null)
@@ -27,6 +29,16 @@ export default function NewGroupForm() {
     getAllFriendsData()
 
   },[axiosPrivate])
+
+  useEffect(()=>{
+    if(errorDiv){
+        const timer = setTimeout(() => {
+            setErrorDiv(false)
+        }, 2000);
+        return ()=> clearTimeout(timer)
+    }
+
+  },[errorDiv])
   
   const handleFileInputChange = (e) => {
     const imageFile = e.target.files[0];
@@ -53,10 +65,19 @@ export default function NewGroupForm() {
   };
 
   const handleSubmitClick = async () => {
+    if(groupName === ""){
+        setErrorDiv(true)
+        return setErrorMessage("Group Name must be provided")
+    }
+
+    if(friendsIncluded.length < 2){
+        setErrorDiv(true)
+        return setErrorMessage("The Group must have atleast 2 Members")
+    }
     const formData = new FormData()
     formData.append("image", image)
     formData.append("groupName", groupName)
-    formData.append("members", friendsIncluded)
+    formData.append("members", JSON.stringify(friendsIncluded))
     try {
         const respone = await axiosPrivate.post("/user/create-new-group", formData, {
             headers : {
@@ -104,6 +125,14 @@ export default function NewGroupForm() {
           onChange={(e) => setGroupName(e.target.value)}
           required
         />
+        {errorDiv && 
+            <div 
+            className=" flex justify-center items-center mt-3 text-white bg-red-600 w-[40%] h-8 rounded-md "
+            >
+                {errorMessage}
+            </div>
+        }
+        
 
         {/* Friends list with add/remove buttons */}
         <div className="ml-4 overflow-y-scroll noScroll text-white mt-4 w-[20rem] sm:w-[29rem] h-[20rem] p-3 border-2 rounded-lg">
@@ -143,6 +172,7 @@ export default function NewGroupForm() {
             </button>
           
         </div>
+        
       </div>
     </div>
   );

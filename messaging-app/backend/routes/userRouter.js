@@ -15,6 +15,9 @@ const storage = multer.diskStorage({
         if(req.profileImage){
             absolutePath = path.join(__dirname, "../uploads/profile-images")
         }
+        if(req.groupImage){
+            absolutePath = path.join(__dirname , "../uploads/group-images")
+        }
         callback(null, absolutePath)
     },
     filename : (req, file, callback)=>{
@@ -63,7 +66,7 @@ router.post("/change-bio", stringValidation("bio"), userController.changeBio)
 
 router.get("/get-friends-data", userController.getFriendsData)
 
-router.post("/create-new-form", userController.createNewForm)
+router.post("/create-new-group", (req,_,next)=>{ req.groupImage = true; next()}, upload.single("image") , userController.createNewForm)
 
 router.delete("/delete-previous-profile-picture/:name", userController.deletePrevProfilePicture)
 
