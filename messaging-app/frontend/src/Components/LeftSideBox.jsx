@@ -6,7 +6,7 @@ LeftSideBox.propTypes = {
     sender : PropTypes.string,
     chatType : PropTypes.string,
     data : PropTypes.shape({
-        time : PropTypes.string.isRequired,
+        time : PropTypes.date,
         path : PropTypes.string,
         content : PropTypes.string
     })

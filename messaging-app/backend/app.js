@@ -8,10 +8,12 @@ const userRouter = require("./routes/userRouter.js")
 const { connectData} = require("./connection.js")
 require("dotenv").config()
 const jwt = require("jsonwebtoken")
-const PORT = process.env.PORT
-const server = http.createServer(app)
 const path = require("path")
+const PORT = process.env.PORT
 
+const server = http.createServer(app)
+
+// creating a new server instance form the above server made with http. this server instance will be used for websockets
 const io = new Server(server , {
     cors : {
         origin : "http://localhost:5173"
@@ -20,9 +22,11 @@ const io = new Server(server , {
 app.use(cors({
     origin : "http://localhost:5173"
 }))
+
 app.use(express.json())
 app.use(express.urlencoded({ extended : false}))
 
+// if database connection is successfull then configuring the server to listen to the port
 connectData((err)=>{
     if(!err){
         server.listen(PORT , ()=> console.log("the server is connected at port", PORT))
@@ -36,15 +40,9 @@ app.use(express.static("uploads"))
 
 app.use("/user", authenticateUser , userRouter)
 
-app.get("/images/:name", (req ,res)=>{
-    const { name } = req.params
-    console.log("the requst is made to get the chat images");
-    const filepath = path.join(__dirname, `./uploads/chat-images/${name}.jpg`)
-    res.sendFile(filepath)
-} )
-
+// the io instance of the server from the socket.io is used to listen for the connection event
+// if connected the socket object / instance will be given which will listen to customized events
 io.on("connection" , (socket)=>{
-    console.log("connected to the socket")
 
     socket.on("join-room", (oldRoomId, newRoomId)=>{
 
@@ -65,6 +63,7 @@ io.on("connection" , (socket)=>{
 
 })
 
+// for the verification of jwt access token
 function authenticateUser(req, res, next){
     const authHeader = req.headers.authorization
     const accessToken = authHeader.split(" ")[1]

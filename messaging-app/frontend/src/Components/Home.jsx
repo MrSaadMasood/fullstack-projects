@@ -481,7 +481,6 @@ export default function Home() {
                     </div>
                 }
     
-                   {console.log('the friend data is', userData)}
                 {optionsSelected !== 6 && selectedChat === "normal" &&
                     <Chat
                         selectedChatSetter={selectedChatSetter}

@@ -62,7 +62,7 @@ export default function GroupChat({
     // handles the message submission and then sends the message to the user connected to the same room
     async function handleSubmit(e) {
         e.preventDefault();
-
+        if(input === "") return
         try {
             const response = await axiosPrivate.post("/user/group-data", {
                 groupId: groupData._id,

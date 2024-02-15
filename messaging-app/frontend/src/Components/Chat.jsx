@@ -39,6 +39,7 @@ export default function Chat({
 // if the message is stored successfully in the database the message is sent to the user/s who is/are connected to the same room
   async function handleSubmit(e) {
       e.preventDefault();
+      if(input === "") return
       try {
           const response = await axiosPrivate.post("/user/chat-data", {
           friendId: friendData._id,
@@ -140,22 +141,22 @@ Chat.propTypes = {
           content : PropTypes.string,
           id : PropTypes.string.isRequired,
           userId : PropTypes.string.isRequired,
-          time : PropTypes.string.isRequired
+          time : PropTypes.date
       }))
     }),
     friendData : PropTypes.shape({
         fullName : PropTypes.string.isRequired,
-        profilePicture : PropTypes.string.isRequired,
+        profilePicture : PropTypes.string,
         _id : PropTypes.string.isRequired
     }),
     userData : PropTypes.shape({
-        bio : PropTypes.string.isRequired,
+        bio : PropTypes.string,
         friends : PropTypes.arrayOf(PropTypes.string),
         fullName : PropTypes.string.isRequired,
         groupChats : PropTypes.arrayOf(PropTypes.object),
         normalChats : PropTypes.arrayOf(PropTypes.object),
         receivedRequests : PropTypes.arrayOf(PropTypes.string),
-        profilePicture : PropTypes.string.isRequired,
+        profilePicture : PropTypes.string,
         sentRequests : PropTypes.arrayOf(PropTypes.string),
         _id : PropTypes.string.isRequired
     }),

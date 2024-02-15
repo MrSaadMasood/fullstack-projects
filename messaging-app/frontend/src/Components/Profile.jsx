@@ -38,6 +38,7 @@ export default function Profile({
     // handles submission of bio to the server
     async function handleSubmit(e) {
         e.preventDefault();
+        if(text === "") return
         try {
             await axiosPrivate.post("/user/change-bio", { bio: text });
             setBio(text);
@@ -101,7 +102,8 @@ export default function Profile({
         <div className="lg:ml-16 lg:w-full lg:h-screen">
             <div className="w-full bg-black text-white border-b-2 border-[#555555] h-16 flex justify-between items-center p-3">
                 <h2>My Profile</h2>
-                <div className="w-[30%] sm:w-[20%] md:w-[16%] lg:w-[14%] xl:w-[10%] flex justify-between items-center">
+                <div className="w-[40%] sm:w-[30%] md:w-[25%] lg:w-[20%] xl:w-[15%] overflow-hidden
+                flex justify-between items-center">
                     <div className="h-10 w-10 rounded-full overflow-hidden">
                         <img src={profilePicture} alt="" width={"400px"} />
                     </div>
