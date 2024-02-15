@@ -20,7 +20,6 @@ export default function Profile( { userData,  profilePictureUrl,  isUserChangedS
     async function handleSubmit(e){
         e.preventDefault()
         try {
-            console.log('the form is now submitted')
             const response = await axiosPrivate.post("/user/change-bio", { bio : text})
             setBio(text)
             setIsBioButtonClicked(false)

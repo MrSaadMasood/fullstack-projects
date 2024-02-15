@@ -458,7 +458,7 @@ exports.getGroupChatData = async(req, res)=>{
                 },
                 {
                   $project: {
-                    _id: 0,
+                    _id: 1,
                     chat: "$chat",
                     senderName: "$sender.fullName",
                   },
@@ -495,6 +495,19 @@ exports.updateGroupChatData = async(req, res)=>{
             res.status(400).json({error : "failed to update the group chat"})
         }
 }
+
+exports.deleteMessage = async(req, res)=>{
+    const { collectionId, type, messageId } = JSON.parse(req.query.data)
+    const collectionName = type === "normal" ? "normalChats" : "groupChats"
+    const result = await deleteMessageFromChat(collectionId, messageId, collectionName)
+    if(result){
+        res.json({ message : "successfully deleted the message"})
+    }
+    else{
+        res.status(400).json({error : "failed to delete the message"})
+    }
+}
+
 async function getCustomData(id, type){
     try {
         const user = await database.collection("users").findOne({ _id : new ObjectId(id)})
@@ -785,6 +798,24 @@ async function updateGroupChat( collectionId, userId, contentType, content){
             }}
         )
         return randomId.toString()
+    } catch (error) {
+        return false
+    }
+}
+
+async function deleteMessageFromChat(collectionId, messageId, collectionName){
+    try {
+        const deletedMessage = await database.collection(collectionName).updateOne(
+            {_id : new ObjectId(collectionId)},
+            { $pull : {
+                chat : {
+                    id :new ObjectId(messageId) 
+                } 
+            } 
+        }
+        )
+        console.log(deletedMessage);
+        return true
     } catch (error) {
         return false
     }

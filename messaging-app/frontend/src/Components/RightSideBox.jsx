@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import useInterceptor from "./hooks/useInterceptors"
 
-export default function RightSideBox({ data, sender, chatType = "normal" }){
+export default function RightSideBox({ data, sender, deleteMessage, chatType = "normal" }){
     const [ url, setUrl ] = useState("")
     const axiosPrivate = useInterceptor()
     const dateObject = new Date(data.time)
-
+    
     useEffect(()=>{
         async function getChatImage(image){
             try {
@@ -33,8 +33,9 @@ export default function RightSideBox({ data, sender, chatType = "normal" }){
     }
     }, [data, axiosPrivate, chatType])
 
+
     return(
-    <div className=" text-white text-base w-[100%] h-auto mb-2 
+    <div onDoubleClick={()=>deleteMessage(data.id)} className=" text-white text-base w-[100%] h-auto mb-2 
     flex justify-end items-center">
         <div className="  w-[60%] mr-3 h-auto flex flex-col justify-betweeen items-end">
             <div className=" text-[.5rem] h-4 w-auto flex justify-around items-center">

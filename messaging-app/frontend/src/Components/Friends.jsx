@@ -6,7 +6,6 @@ export default function Friends({ data,selectedChatSetter, selectedOptionSetter,
     const axiosPrivate = useInterceptor()
     
     function sendMessage(data){
-        console.log("the friend is now being messaged");
         selectedOptionSetter(1, "Chats")
         selectedChatSetter(data.fullName)
         getChatData(data, "normal")

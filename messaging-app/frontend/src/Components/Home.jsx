@@ -8,15 +8,13 @@ import FriendRequests from "./FriendRequests";
 import Users from "./Users";
 import Friends from "./Friends";
 import useInterceptor from "./hooks/useInterceptors";
-import { Link, useLocation } from "react-router-dom";
+import { Link} from "react-router-dom";
 import { io } from "socket.io-client";
 import Profile from "./Profile";
 import GroupMessagesList from "./GroupMessagesList";
-import NewGroupForm from "./Forms/NewGroupForm";
 import GroupChat from "./GroupChat";
 
 export default function Home(){
-    // const { state }= useLocation()
     const [ optionsSelected, setOptionsSelected] = useState(1)
     const [ headerText , setHeaderText]= useState("Chats")
     const [ selectedChat, setSelectedChat ] = useState(null)
@@ -26,16 +24,18 @@ export default function Home(){
     const [ isUserChanged, setIsUserChanged] = useState(false)
     const [ chatData, setChatData] = useState({ chat : []})
     const [ groupChatData, setGroupChatData] = useState([])
+    console.log("this is the group chat data", groupChatData)
     const [ friendData, setFriendData] = useState({})
     const [ socket, setSocket] = useState(null)
     const [ joinedRoom, setJoinedRoom] = useState(null)
     const [ groupData, setGroupData ] = useState({})
     const [ profilePictureUrl, setProfilePictureUrl ] = useState("/placeholder.png")
     const [ friendChatImage, setFriendChatImage  ] = useState("/placeholder.png")
+    const [ messageToDeleteInfo, setMessageToDeleteInfo] = useState({})
+    const [ showDeleteMessageOptions, setShowDeletMessageOption] = useState(false)
     const axiosPrivate = useInterceptor()
     const display = selectedChat ? "hidden" : ""    
-    console.log("the chatData is ", dataArray)
-
+    console.log("the data array is", dataArray)
     useEffect(()=>{
         
         const socket = io("http://localhost:3000")
@@ -45,12 +45,25 @@ export default function Home(){
             setJoinedRoom(roomId)
         })
 
-        socket.on("received-message", (data)=>{
+        socket.on("received-message", (data, chatType, groupChatData )=>{
             
-            chatDataSetter(data)
+            console.log("checking the websockets type",data);
+            console.log("the dataArray is", dataArray)
+            if(chatType === "normal"){
 
-            chatListArraySetter(data.userId, data)
+                chatDataSetter(data, chatType)
+                chatListArraySetter(data.userId, data, chatType)
+            }
+            if(chatType === "group"){
+                console.log("the message is recerived");
+                chatDataSetter(groupChatData, chatType)
+                chatListArraySetter(data._id, data, chatType)
+            }
 
+        })
+        
+        socket.on("delete-message", (id, type)=>{
+            removeDeletedMessageFromChat(id, type)
         })
         return ()=>{
             socket.disconnect()
@@ -87,7 +100,6 @@ export default function Home(){
             }
         if(optionsSelected === 4 ){
                 axiosPrivate.get("/user/group-chats").then(res=>{
-                    console.log("the group chats are ", res.data.groupChats)
                     setDataArray(res.data.groupChats)
                 }).catch(error=>{
                     console.log("failed to get the group chats ", error)
@@ -155,7 +167,6 @@ export default function Home(){
     }
 
     function selectedOptionSetter(option, text){
-        console.log("the options is set to", option)
         setOptionsSelected(option)
         setHeaderText(text)
     }
@@ -173,7 +184,6 @@ export default function Home(){
 
         if(type === "normal"){
             axiosPrivate.get(`/user/get-chat/${data._id}`).then(res=>{
-                console.log("the response obtained is", res.data)
                 setChatData(res.data.chatData)
             }).catch(error=>{
                 console.log("error occured while getting the chat", error)
@@ -188,7 +198,6 @@ export default function Home(){
 
         if(type === "group"){
             axiosPrivate.get(`/user/get-group-chat/${data._id}`).then(res=>{
-                console.log("the response is", res.data)
                 setGroupChatData(res.data.groupChatData)
             }).catch(error=>{
                 console.log("error occured while getting the group chat data", error)
@@ -217,11 +226,11 @@ export default function Home(){
         }
 
         if(chatType === "group"){
-           console.log("the data array is ", dataArray) 
+
            setDataArray((prevData)=>{
             const modified = prevData.map(item=>{
                 if(item._id === id){
-                    item.lastMessage = data
+                    return data
                 }
                 return item
             })
@@ -239,20 +248,21 @@ export default function Home(){
                 userId : userData._id}
 
         if(chatType === "normal"){
-            chatDataSetter(data)
-            chatListArraySetter(sentData._id, data)
-            socket.emit("send-message", joinedRoom, data )
+            chatDataSetter(data , chatType)
+            chatListArraySetter(sentData._id, data, chatType)
+            socket.emit("send-message", joinedRoom, data, chatType, "useless" )
         }
 
         if(chatType === "group"){
+            console.log("the data send is", sentData)
             const groupChatData = { 
-                sender : userData.fullName,
+                senderName : sentData.senderName,
                 chat : data
             }
-            chatDataSetter(groupChatData, "group")
+            chatDataSetter(groupChatData, chatType)
             sentData.lastMessage = data
-            console.log("sent data modified is ", sentData)
-            socket.emit("send-message", joinedRoom, groupChatData )
+            chatListArraySetter(sentData._id, sentData, chatType)
+            socket.emit("send-message", joinedRoom, sentData, chatType, groupChatData )
         }
 
     }
@@ -283,9 +293,74 @@ export default function Home(){
     function chatFriendImageSetter(url){
         setFriendChatImage(url)
     }
+    function handleMessageDelete(messageId, type){
 
+        setMessageToDeleteInfo({
+            collectionId : type === "normal" ? chatData._id : groupChatData[0]._id,
+            type : type,
+            messageId
+        })
+        setShowDeletMessageOption(true)
+    }
+    function removeDeletedMessageFromChat(messageId, type){
+
+        if(type === "normal"){
+            setChatData((prevData)=>{
+                const arrayAfterDeletion = prevData.chat.filter(item=>{
+                    return item.id !== messageId
+                })
+                return {
+                    ...prevData,
+                    chat : [...arrayAfterDeletion]
+                }
+            })
+            socket.emit("delete-message",joinedRoom, messageId, type)
+        }
+        if(type === "group"){
+            setGroupChatData((prevData)=>{
+                const array = prevData.filter(item=>{
+                    return item.chat.id !== messageId
+                })
+                return array
+            })
+            socket.emit("delete-message", joinedRoom, messageId, type)
+        }
+    }
+    async function deleteMessage(){
+        try {
+            const response = await axiosPrivate.delete(`/user/delete-message?data=${JSON.stringify(messageToDeleteInfo)}`)
+            console.log(response.data)
+            removeDeletedMessageFromChat(messageToDeleteInfo.messageId, messageToDeleteInfo.type)
+            setShowDeletMessageOption(false)
+        } catch (error) {
+            console.log("failed to delete the specified message", error)
+        }
+    }
     return (
         <div>
+        {showDeleteMessageOptions && 
+            <div className="relative">
+            <div className="absolute top-0 left-0 text-black w-screen h-screen z-20 flex justify-center items-center">
+                <div className="bg-[#4b4b4b] h-64 w-72 sm:w-[24rem] md:w-[27rem] p-2 md:p-3 text-white flex flex-col items-center shadowit justify-center rounded-lg">
+                    <p className=" w-[90%] text-center sm:text-lg">Are You Sure You Want To Delete This Message</p>
+                    <div className=" flex justify-between items-center mt-4 lg:mt-5 w-[70%] sm:w-[55%] md:w-[50%]">
+                        <button 
+                        onClick={deleteMessage}
+                        className="bg-red-600 hover:bg-red-700 ease-in duration-100 rounded-md text-white px-4 py-2">Delete</button>
+                        <button
+                        
+                        className="bg-gray-400 hover:bg-gray-500 ease-in duration-100 rounded-md text-white px-4 py-2">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            </div>
+        }
+        
+
+
+
+            
+        {/* } */}
         <div className="lg:flex">
             <SideBar 
                 setOptions={selectedOptionSetter}  
@@ -397,6 +472,7 @@ export default function Home(){
                 sendMessageToWS={sendMessageToWS} 
                 chatDataSetter={chatDataSetter} 
                 friendChatImage={friendChatImage}
+                handleMessageDelete={handleMessageDelete}
             />}
             {optionsSelected !== 6 && selectedChat === "group" &&
             <GroupChat
@@ -407,6 +483,7 @@ export default function Home(){
             groupData={groupData}
             chatDataSetter={chatDataSetter}
             sendMessageToWS={sendMessageToWS}
+            handleMessageDelete={handleMessageDelete}
             />}
             {optionsSelected !==6 && !selectedChat &&
                 <div className="hidden bg-black h-screen w-full lg:flex justify-center items-center text-white text-2xl">

@@ -8,8 +8,7 @@ export default function LoginForm(){
         const [ checked ,setChecked] = useState(false)
         const [ isFailed, setIsFailed]= useState(false)
         const [errorMessage, setErrorMessage] = useState(null)
-        const { isAuthenticated, setIsAuthenticated } = useContext(isAuth)
-        console.log("the user is", isAuthenticated)
+        const { setIsAuthenticated } = useContext(isAuth)
         const width = isFailed ? "w-[23rem] h-auto" : "w-0 h-0"
         const navigate = useNavigate()
         const { setItem } = useLocalStorage()
@@ -26,7 +25,6 @@ export default function LoginForm(){
 
         function handleChange(e){
             const { name , value} = e.target
-            console.log(name, value)
             setformData((prevData)=>({
                 ...prevData,
                 [name] : value

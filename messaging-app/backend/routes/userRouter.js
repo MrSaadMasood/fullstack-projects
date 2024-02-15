@@ -78,6 +78,8 @@ router.post("/add-group-chat-image", (req,_,next)=>{ req.groupImage = true; next
 
 router.post("/group-data", stringValidation("content"), userController.updateGroupChatData)
 
+router.delete("/delete-message", userController.deleteMessage)
+
 router.delete("/delete-previous-profile-picture/:name", userController.deletePrevProfilePicture)
 
 module.exports = router

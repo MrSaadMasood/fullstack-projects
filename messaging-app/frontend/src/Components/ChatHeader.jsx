@@ -1,7 +1,6 @@
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 
 export default function ChatHeader({ selectedChatSetter, friendData,  friendChatImage}){
-    console.log("the frind data sent is", friendData)
     function goBack(){
         selectedChatSetter(null)
     }

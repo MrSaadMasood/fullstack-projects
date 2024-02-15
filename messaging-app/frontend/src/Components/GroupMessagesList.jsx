@@ -5,7 +5,6 @@ export default function GroupMessagesList({ data, key, userData, selectedChatSet
     const dateObject = new Date(data?.lastMessage?.time)
     const [ picture , setPicture ] = useState("/placeholder.png")
     const axiosPrivate = useInterceptor()
-    console.log("the data send in the group message list is", data);
     
     useEffect(()=>{
 
@@ -47,7 +46,7 @@ export default function GroupMessagesList({ data, key, userData, selectedChatSet
                         <p className="text-sm sm:text-base lg:text-xs text-[#b2b2b2] h-5 
                             w-[16rem] sm:w-[22rem] lg:w-[10rem]
                             flex overflow-hidden ">
-                                Image Received    
+                                Image    
                             </p>    
                     }
                     {data.lastMessage.content &&

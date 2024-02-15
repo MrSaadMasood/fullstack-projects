@@ -13,10 +13,10 @@ export default function GroupChat({
     groupImage,
     userData,
     chatDataSetter,
+    handleMessageDelete,
     sendMessageToWS
 }){
     const chatDiv = useRef(null)
-    console.log("the data is ", data);
     const axiosPrivate = useInterceptor()
     // const [ isScrolled, setIsScrolled] = useState(false)
     // const [ arrayChanged, setArrayChanged] = useState(false)
@@ -52,16 +52,15 @@ export default function GroupChat({
     // })
 
     function onChange(e){
-        console.log('triggerd')
         setInput(e.target.value)
     }
     async function handleSubmit(e){
         e.preventDefault()
         try {
             const response = await axiosPrivate.post("/user/group-data", { groupId : groupData._id, content : input })
-            console.log("the respoinse is ", response.data)
+            console.log("The group dat ais", groupData)
             sendMessageToWS(groupData ,input, response.data.id, "group")
-            setInput("")
+            e.target.reset()
         } catch (error) {
            console.log("error occured while sending the message", error) 
         }
@@ -71,7 +70,7 @@ export default function GroupChat({
     async function handleFileChange(e){
         const image = e.target.files[0]
         if(image.size > 500000){
-            const data = { senderName : "Saad", 
+            const data = { senderName : userData.fullName, 
                             chat : {
                                 content : "Image should be less than 500kb",
                                 userId : userData._id, 
@@ -88,11 +87,14 @@ export default function GroupChat({
                 }
             })
             const { filename, id } = response.data
-            console.log("the response after sending the image is", response.data)
+            groupData.senderName = userData.fullName
             sendMessageToWS(groupData, filename, id, "group", "path" )
         } catch (error) {
             console.log("error occured while sending the image to the server", error)
         }
+    }
+    function deleteMessage(id){
+        handleMessageDelete(id, "group")
     }
     return (
         <div className=" lg:w-full">
@@ -101,12 +103,12 @@ export default function GroupChat({
             <div ref={chatDiv} className="chatbox h-[90vh] md:h-[92vh] lg:h-[82vh] p-2 pb-20 md:pb-32 lg:pb-4 relative
              bg-black w-full lg:w-full overflow-y-scroll noScroll ">
                 {data.map((chatData, index)=>{
-                    
+                        // console.log("the chat data is", chatData)
                         if(chatData.chat.error && chatData.chat.userId === userData._id){
                             return <ErrorBox key={index} data={chatData.chat} />
                         }
                         if(chatData.chat.userId === userData._id){
-                            return <RightSideBox key={index} data={chatData.chat}
+                            return <RightSideBox key={index} data={chatData.chat} deleteMessage={deleteMessage}
                             chatType="group" sender={chatData.senderName} />
                         }
                         else{

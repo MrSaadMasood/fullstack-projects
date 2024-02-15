@@ -55,8 +55,12 @@ io.on("connection" , (socket)=>{
         socket.emit("joined-chat", newRoomId)
     })
 
-    socket.on("send-message", (roomId, data)=>{
-        socket.to(roomId).emit("received-message", data)
+    socket.on("send-message", (roomId, data, chatType, groupChatData)=>{
+        socket.to(roomId).emit("received-message", data, chatType, groupChatData )
+    })
+
+    socket.on("delete-message", (roomId, messageId, type)=>{
+        socket.to(roomId).emit("delete-message", messageId, type)
     })
 
 })

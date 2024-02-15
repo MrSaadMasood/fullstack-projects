@@ -8,7 +8,9 @@ import useInterceptor from "./hooks/useInterceptors";
 import ErrorBox from "./ErrorBox";
 import ChatForm from "./Forms/ChatForm";
 
-export default function Chat({ selectedChatSetter, chatData, friendData, userData, sendMessageToWS, chatDataSetter, friendChatImage}){
+export default function Chat({ selectedChatSetter, chatData, friendData, userData, sendMessageToWS, chatDataSetter,
+    handleMessageDelete,
+    friendChatImage}){
     const fileInputRef = useRef()
     const chatDiv = useRef()
     const axiosPrivate = useInterceptor()
@@ -27,27 +29,7 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
 
     },[chatData])
     
-    // useEffect(()=>{
-
-    // const div = chatDiv.current
-    //     div.addEventListener("scroll", ()=>{
-    //         console.log(div.scrollTop + div.clientHeight === div.scrollHeight )
-    //         if(div.scrollTop + div.clientHeight === div.scrollHeight ){
-    //             setIsScrolled(false)
-    //         }
-    //         else if( div.scrollTop + div.clientHeight !== div.scrollHeighth && arrayChanged){
-    //             console.log("inside the else if statement");
-    //             setIsScrolled(false)
-    //             setArrayChanged(false)
-    //         }
-    //         else{
-    //             setIsScrolled(true)
-    //         }
-    //     })
-    // })
-
     function onChange(e){
-        console.log('triggerd')
         setInput(e.target.value)
     }
     async function handleSubmit(e){
@@ -55,7 +37,7 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
         try {
             const response = await axiosPrivate.post("/user/chat-data", { friendId : friendData._id, content : input })
             sendMessageToWS( friendData ,input, response.data.id)
-            setInput("")
+            e.target.reset()
         } catch (error) {
            console.log("error occured while sending the message", error) 
         }
@@ -79,23 +61,25 @@ export default function Chat({ selectedChatSetter, chatData, friendData, userDat
             console.log("error occured while sending the image to the server", error)
         }
     }
-
+    function deleteMessage(id){
+        handleMessageDelete(id, "normal")
+    }
     return (
         <div className=" lg:w-full">
             <ChatHeader selectedChatSetter={selectedChatSetter} friendData={friendData} friendChatImage={friendChatImage}/>
             
             <div ref={chatDiv} className="chatbox h-[90vh] md:h-[92vh] lg:h-[82vh] p-2 pb-20 md:pb-32 lg:pb-4 relative
              bg-black w-full lg:w-full overflow-y-scroll noScroll ">
-                {realChat?.map((chat)=>{
+                {realChat?.map((chat, index)=>{
                     
                         if(chat.error && chat.userId === userData._id){
-                            return <ErrorBox data={chat} />
+                            return <ErrorBox key={index} data={chat} />
                         }
                         if(chat.userId === userData._id){
-                            return <RightSideBox data={chat} />
+                            return <RightSideBox key={index} data={chat} deleteMessage={deleteMessage} />
                         }
                         else{
-                            return <LeftSideBox data={chat} />
+                            return <LeftSideBox key={index} data={chat} />
                         }
                 })}
             </div>
