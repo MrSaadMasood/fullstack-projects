@@ -1,25 +1,39 @@
+import { useState } from "react"
 import useInterceptor from "./hooks/useInterceptors"
+import PropTypes from "prop-types"
 
-export default function FriendRequests({ data,  isUserChangedSetter, removeFollowRequest }){
+export default function FriendRequests({ 
+    data,  
+    isUserChangedSetter, 
+    removeFollowRequest 
+}){
     const axiosPrivate = useInterceptor()
+    const [acceptLoading, setAcceptLoading] = useState(false)
+    const [declineLoading, setDeclineLoading] = useState(false)
     
     async function addFriend(id){
         try {
-            const response = await axiosPrivate.post("/user/add-friend", { friendId : id})
+            setAcceptLoading(true)
+            await axiosPrivate.post("/user/add-friend", { friendId : id})
             isUserChangedSetter(true)
             removeFollowRequest(id)
+            setAcceptLoading(false)
         } catch (error) {
            console.log("failed to add friend", error) 
+            setAcceptLoading(false)
         }
     }
 
     async function removeRequest(id){
         try {
-            const response = await axiosPrivate.delete(`/user/remove-follow-request/${id}`)
+            setDeclineLoading(true)
+            await axiosPrivate.delete(`/user/remove-follow-request/${id}`)
             isUserChangedSetter(true)
             removeFollowRequest(id)
+            setDeclineLoading(false)
         } catch (error) {
-           console.log("failed to add friend", error) 
+            console.log("failed to add friend", error) 
+            setDeclineLoading(false)
         }
     }
     return (
@@ -34,15 +48,28 @@ export default function FriendRequests({ data,  isUserChangedSetter, removeFollo
                         {data.fullName}
                     </p>
                     <div className=" h-8 w-[100%] flex justify-between items-center">
-                        <button className=" bg-red-600 hover:bg-red-700 h-[100%] w-[45%] rounded-md" onClick={()=>addFriend(data._id)}>
-                            Accept
+                        <button className=" bg-red-600 hover:bg-red-700 h-[100%] w-[45%] rounded-md"
+                        onClick={()=>addFriend(data._id)}
+                        disabled={acceptLoading}>
+                            {acceptLoading ? "Accepting" : "Accept"}
                         </button>
-                        <button className="  bg-red-600 hover:bg-red-700 h-[100%] w-[45%] rounded-md " onClick={()=>removeRequest(data._id)}>
-                            Decline
+                        <button className="  bg-red-600 hover:bg-red-700 h-[100%] w-[45%] rounded-md " 
+                        onClick={()=>removeRequest(data._id)}
+                        disabled={declineLoading}>
+                            {declineLoading ? "Decligning" : "Decline"}
                         </button>
                     </div>
                 </div>
             </div>
         </div>
     )
+}
+
+FriendRequests.propTypes = {
+    data : PropTypes.shape({
+        _id : PropTypes.string.isRequired,
+        fullName : PropTypes.string.isRequired,
+    }),
+    isUserChangedSetter : PropTypes.func,
+    removeFollowRequest : PropTypes.func
 }

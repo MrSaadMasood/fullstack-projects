@@ -1,5 +1,4 @@
 import { useContext } from "react";
-import Home from "./Home";
 import Login from "./Login";
 import { isAuth } from "./Context/authContext";
 import { Outlet } from "react-router-dom";

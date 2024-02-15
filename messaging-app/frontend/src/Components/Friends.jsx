@@ -1,23 +1,35 @@
+import { useState } from "react";
 import useInterceptor from "./hooks/useInterceptors";
+import PropTypes from "prop-types"
 
-export default function Friends({ data,selectedChatSetter, selectedOptionSetter, isUserChangedSetter, removeFriendFromDataArray,
- getChatData}){
+export default function Friends({ 
+    data,
+    selectedChatSetter, 
+    selectedOptionSetter, 
+    isUserChangedSetter, 
+    removeFriendFromDataArray,
+    getChatData
+}){
     
     const axiosPrivate = useInterceptor()
-    
+    const [loading, setLoading] = useState(false)
+
     function sendMessage(data){
         selectedOptionSetter(1, "Chats")
-        selectedChatSetter(data.fullName)
+        selectedChatSetter("normal")
         getChatData(data, "normal")
     }
 
     async function removeFriend(id){
         try {
-            const response = await axiosPrivate.delete(`/user/remove-friend/${id}`)
+            setLoading(true)
+            await axiosPrivate.delete(`/user/remove-friend/${id}`)
             isUserChangedSetter(true) 
             removeFriendFromDataArray(id)
+            setLoading(false)
         } catch (error) {
             console.log("error while removing the friends", error)
+            setLoading(false)
         }
     }
     return(
@@ -32,15 +44,32 @@ export default function Friends({ data,selectedChatSetter, selectedOptionSetter,
                         {data.fullName}
                     </p>
                     <div className=" h-8 lg:h-6 w-[100%] flex justify-between items-center">
-                        <button onClick={()=>sendMessage(data)} className=" bg-red-600 hover:bg-red-700 h-[100%] w-[45%] rounded-md">
+                        <button onClick={()=>sendMessage(data)} 
+                        className=" bg-red-600 hover:bg-red-700 h-[100%] w-[45%] rounded-md">
                             Message
                         </button>
-                        <button onClick={()=>removeFriend(data._id)} className=" bg-red-600 hover:bg-red-700 h-[100%] w-[45%] rounded-md">
-                            Remove
+                        <button 
+                        onClick={()=>removeFriend(data._id)} 
+                        className=" bg-red-600 hover:bg-red-700 h-[100%] w-[45%] rounded-md"
+                        disabled={loading}
+                        >
+                            {loading ? "Removing" : "Remove"}
                         </button>
                     </div>
                 </div>
             </div>
         </div>
     )
+}
+
+Friends.propTypes = {
+    data : PropTypes.shape({
+        _id : PropTypes.string.isRequired,
+        fullName : PropTypes.string.isRequired
+    }),
+    selectedChatSetter : PropTypes.func,
+    selectedOptionSetter : PropTypes.func,
+    isUserChangedSetter : PropTypes.func,
+    removeFriendFromDataArray : PropTypes.func,
+    getChatData : PropTypes.func
 }
