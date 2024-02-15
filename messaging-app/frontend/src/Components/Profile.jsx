@@ -25,7 +25,7 @@ export default function Profile({
     const [bio, setBio] = useState(isBio);
     const [profilePicture, setProfilePicture] = useState(profilePictureUrl);
     const [isBioButtonClicked, setIsBioButtonClicked] = useState(false);
-    const [submitProfilePicture, setSubmitProfilePictureButton] = useState(false);
+    const [submitProfilePictureButton , setSubmitProfilePictureButton] = useState(false);
     const [image, setImage] = useState(null);
     const [text, setText] = useState(bio);
     const axiosPrivate = useInterceptor();
@@ -35,6 +35,7 @@ export default function Profile({
         setText(e.target.value);
     }
 
+    // handles submission of bio to the server
     async function handleSubmit(e) {
         e.preventDefault();
         try {
@@ -51,6 +52,8 @@ export default function Profile({
         pictureRef.current.click();
     }
 
+    // if an image is uploaded it shown a preview and then if confirm saves the image to the server
+    // if the user already has a profile picture the previous picture is deletd and is replaced with new picture
     async function handleImageSubmission() {
         try {
             if (userData.profilePicture) {
@@ -85,6 +88,7 @@ export default function Profile({
         }
     }
 
+    // handles the uploading of image and image preview
     function handleImageChange(e) {
         const image = e.target.files[0];
         const url = URL.createObjectURL(image);
@@ -109,7 +113,7 @@ export default function Profile({
                     <div className=" h-44 w-44 sm:h-60 sm:w-60 rounded-full flex justify-center items-center relative overflow-hidden">
                         <img src={profilePicture} alt="" width={"1000px"} />
                     </div>
-                    {!submitProfilePicture && (
+                    {!submitProfilePictureButton && (
                         <button
                             className="absolute bottom-0 right-7 sm:right-10 flex justify-center items-center
                                 h-8 w-8 sm:h-12 sm:w-12 rounded-full bg-gray-400"
@@ -119,7 +123,7 @@ export default function Profile({
                         </button>
                     )}
 
-                    {submitProfilePicture && (
+                    {submitProfilePictureButton && (
                         <button
                             className="absolute bottom-0 right-7 sm:right-10 flex justify-center items-center
                                 h-8 w-8 sm:h-12 sm:w-12 rounded-full bg-gray-400"

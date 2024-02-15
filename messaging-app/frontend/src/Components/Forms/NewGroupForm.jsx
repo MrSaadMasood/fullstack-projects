@@ -16,6 +16,7 @@ export default function NewGroupForm() {
     const axiosPrivate = useInterceptor();
     const imageRef = useRef(null);
 
+    // used to get the data of all the friends of the user.
     useEffect(() => {
         async function getAllFriendsData() {
             try {
@@ -32,6 +33,7 @@ export default function NewGroupForm() {
         getAllFriendsData();
     }, [axiosPrivate]);
 
+    // timer to remove the error div
     useEffect(() => {
         if (errorDiv) {
             const timer = setTimeout(() => {
@@ -41,6 +43,7 @@ export default function NewGroupForm() {
         }
     }, [errorDiv]);
 
+    // handles the that is upload converts it into the object url and shows the image preview
     const handleFileInputChange = (e) => {
         const imageFile = e.target.files[0];
         const url = URL.createObjectURL(imageFile);
@@ -48,6 +51,7 @@ export default function NewGroupForm() {
         setImage(imageFile);
     };
 
+    // for addinf or removing the friends from the included members of th group
     const handleAddRemoveButtonClick = (friend) => {
         const friendIndex = friendsIncluded.findIndex((f) => f === friend);
 
@@ -64,6 +68,8 @@ export default function NewGroupForm() {
         navigate("/");
     };
 
+    // conditionally checks if the group name is empty or not or if the group has at least 2 members
+    // the request is sent and the user is then redirected to the homepage
     const handleSubmitClick = async () => {
         if (groupName === "") {
             setErrorDiv(true);

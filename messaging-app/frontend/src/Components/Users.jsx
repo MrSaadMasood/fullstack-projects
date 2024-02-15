@@ -24,6 +24,7 @@ export default function Users({
     const isRequestSend = userData.sentRequests.includes(data._id);
     const backgroundColor = isRequestSend ? "bg-red-400" : "bg-red-600 hover:bg-red-700";
 
+    // to the send the follow request to the user
     async function sendRequest() {
         try {
             setLoading(true)
@@ -57,11 +58,11 @@ export default function Users({
                         }
                         {loading && 
                             <button
-                                    className={`h-[100%] w-[95%] rounded-md ${backgroundColor}`}
-                                    disabled={true}
-                                >
-                                    Sending
-                                </button>
+                                className={`h-[100%] w-[95%] rounded-md ${backgroundColor}`}
+                                disabled={true}
+                            >
+                                Sending
+                            </button>
                         } 
                     </div>
                 </div>

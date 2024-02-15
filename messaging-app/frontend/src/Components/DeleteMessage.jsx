@@ -1,4 +1,5 @@
 import PropTypes from "prop-types"
+// div shown the user want to delete his message
 export default function DeleteMessage({ deleteMessage }) {
     return (
         <div className="relative">

@@ -8,6 +8,7 @@ import Signup from './Components/Signup.jsx'
 import { AuthProvider } from './Components/Context/authContext.jsx'
 import PrivateRoute from './Components/PrivateRoute.jsx'
 import NewGroupForm from './Components/Forms/NewGroupForm.jsx'
+import ErrorPage from './Components/ErrorPage.jsx'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -18,6 +19,7 @@ const router = createBrowserRouter(
       </Route>
       <Route path='/login' element={<Login />} />
       <Route path='/sign-up' element={<Signup />} />
+      <Route path='*' element={<ErrorPage/>} />
     </>
   )
 )

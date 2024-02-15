@@ -17,42 +17,47 @@ export default function Chat({
   handleMessageDelete,
   friendChatImage,
 }) {
+
+  // reference to scroll to the bottom of the overflowing div authomatically
   const chatDiv = useRef();
   const axiosPrivate = useInterceptor();
   const [input, setInput] = useState("");
   const realChat = chatData?.chat;
 
   useEffect(() => {
-    const div = chatDiv.current;
-    function scrollToBottom() {
-      div.scrollTop = div.scrollHeight;
+      const div = chatDiv.current;
+      function scrollToBottom() {
+          div.scrollTop = div.scrollHeight;
     }
 
-    scrollToBottom();
+      scrollToBottom();
   }, [chatData]);
 
     function onChange(e) {
         setInput(e.target.value);
   }
-
+// if the message is stored successfully in the database the message is sent to the user/s who is/are connected to the same room
   async function handleSubmit(e) {
-    e.preventDefault();
-    try {
-        const response = await axiosPrivate.post("/user/chat-data", {
-        friendId: friendData._id,
-        content: input,
-        });
-        sendMessageToWS(friendData, input, response.data.id);
-        e.target.reset();
-    } 
-    catch (error) {
-        console.log("Error occurred while sending the message", error);
+      e.preventDefault();
+      try {
+          const response = await axiosPrivate.post("/user/chat-data", {
+          friendId: friendData._id,
+          content: input,
+          });
+          sendMessageToWS(friendData, input, response.data.id);
+          e.target.reset();
+      } 
+      catch (error) {
+          console.log("Error occurred while sending the message", error);
     }
   }
 
+  // handles the uploading of image if the image is greater than 1mb an error message is sent to the user
+  // else the image is sent to the server to be stored after than the image path/address is sent to the user on the other side
+  // connected to the same room
   async function handleFileChange(e) {
     const image = e.target.files[0];
-    if (image.size > 500000) {
+    if (image.size > 1000000) {
       return chatDataSetter({
         content: "Image should be less than 500kb",
         userId: userData._id,
@@ -96,13 +101,23 @@ export default function Chat({
         >
         {realChat?.map((chat, index) => {
             if (chat.error && chat.userId === userData._id) {
-                return <ErrorBox key={index} data={chat} />;
+                return <ErrorBox 
+                          key={index} 
+                          data={chat} 
+                        />;
         }
             if (chat.userId === userData._id) {
-                return <RightSideBox key={index} data={chat} deleteMessage={deleteMessage} />;
+                return <RightSideBox 
+                          key={index} 
+                          data={chat} 
+                          deleteMessage={deleteMessage} 
+                          />;
         } 
             else {
-                return <LeftSideBox key={index} data={chat} />;
+                return <LeftSideBox 
+                          key={index} 
+                          data={chat} 
+                        />;
         }
         })}
         </div>
@@ -122,7 +137,7 @@ Chat.propTypes = {
     chatData : PropTypes.shape({
       _id : PropTypes.string,
       chat : PropTypes.arrayOf(PropTypes.shape({
-          content : PropTypes.string.isRequired,
+          content : PropTypes.string,
           id : PropTypes.string.isRequired,
           userId : PropTypes.string.isRequired,
           time : PropTypes.string.isRequired

@@ -16,34 +16,52 @@ import GroupChat from "./GroupChat";
 import DeleteMessage from "./DeleteMessage";
 
 export default function Home() {
+    // based on the option the specific data is fetched and shown
     const [optionsSelected, setOptionsSelected] = useState(1);
     const [headerText, setHeaderText] = useState("Chats");
+    // the selected chat type is used to dispalay various components 
     const [selectedChat, setSelectedChat] = useState(null);
+    // for storing the friends, request, users, group chat list etc.
     const [dataArray, setDataArray] = useState([]);
     const [userData, setUserData] = useState(null);
+    // for storing that chat list data so that if the user selectes another option this data persists and not fetched every time
     const [chatList, setChatList] = useState([]);
+    // basically used if the auth tokens are refershed then the user data is fetched again. Also when the database is updated with 
+    // some data and userData needs to be updated with that data
     const [isUserChanged, setIsUserChanged] = useState(false);
+    // the selected chat data containing all the messages
     const [chatData, setChatData] = useState({ chat: [] });
+    // the selected group chat data containing all the messages
     const [groupChatData, setGroupChatData] = useState([]);
+    // data of the selected friend whom the user is chatting
     const [friendData, setFriendData] = useState({});
+    // for socket instance
     const [socket, setSocket] = useState(null);
+    // to stored the room id
     const [joinedRoom, setJoinedRoom] = useState(null);
+    // the data of the group the user is messaging in
     const [groupData, setGroupData] = useState({});
+    // user profile picture url
     const [profilePictureUrl, setProfilePictureUrl] = useState("/placeholder.png");
+    // friend profile picture
     const [friendChatImage, setFriendChatImage] = useState("/placeholder.png");
+    // to store the message to be deleted
     const [messageToDeleteInfo, setMessageToDeleteInfo] = useState({});
     const [showDeleteMessageOptions, setShowDeletMessageOption] = useState(false);
     const axiosPrivate = useInterceptor();
     const display = selectedChat ? "hidden" : "";
 
+    // create a socket instance when the component renders/ mounts
     useEffect(() => {
         const socket = io("http://localhost:3000");
         setSocket(socket);
 
+        // to set the room id so that the other user can connect to the same room
         socket.on("joined-chat", (roomId) => {
             setJoinedRoom(roomId);
         });
 
+        // to add the message received from the user in the chat / group chat data simultaneously
         socket.on("received-message", (data, chatType, groupChatData) => {
 
             if (chatType === "normal") {
@@ -57,6 +75,7 @@ export default function Home() {
             }
         });
 
+        // to delete the message that other user deleted from this users chat/ group chat
         socket.on("delete-message", (id, type) => {
             removeDeletedMessageFromChat(id, type);
         });
@@ -66,7 +85,9 @@ export default function Home() {
         };
     }, []);
 
+    // based on the type of the option selection specific get request are made to the server to fetch the data
     useEffect(() => {
+        // to get the normal chat list of the user with friends containing the friend name and last message
         if (optionsSelected === 1) {
             axiosPrivate.get("/user/get-chatlist").then((res) => {
                 setChatList(res.data.chatList);
@@ -76,6 +97,7 @@ export default function Home() {
             });
         }
 
+        // to get all the friends of the user
         if (optionsSelected === 2) {
             axiosPrivate.get("/user/get-friends").then((res) => {
                 if (res.status === 200) {
@@ -86,6 +108,7 @@ export default function Home() {
             });
         }
 
+        // to get the follow request sent to the user
         if (optionsSelected === 3) {
             axiosPrivate.get("/user/follow-requests").then((res) => {
                 setDataArray(res.data.receivedRequests);
@@ -95,6 +118,7 @@ export default function Home() {
             });
         }
 
+        // to get group chats with last message and group name
         if (optionsSelected === 4) {
             axiosPrivate.get("/user/group-chats").then((res) => {
                 setDataArray(res.data.groupChats);
@@ -104,6 +128,7 @@ export default function Home() {
             });
         }
 
+        // to get all the users of the app
         if (optionsSelected === 5) {
             axiosPrivate.get("/user/get-users").then((res) => {
                 setDataArray(res.data.users);
@@ -114,10 +139,12 @@ export default function Home() {
         }
     }, [optionsSelected, axiosPrivate]);
 
+    // on component mount the userData is fetched from the server
     useEffect(() => {
         getUserData();
     }, [axiosPrivate]);
 
+    // when ever the data is updated in the database and the user needs to be updated
     useEffect(() => {
         if (isUserChanged) {
             getUserData();
@@ -125,6 +152,8 @@ export default function Home() {
         }
     }, [axiosPrivate, isUserChanged]);
 
+    // get the data from the database of the user and if the user data contains the profile picture the
+    // blob is fetched and then converted to url that is displayed.
     async function getUserData() {
         try {
             const response = await axiosPrivate.get("/user/updated-data");
@@ -142,6 +171,8 @@ export default function Home() {
         }
     }
 
+    // this adds the user that is sent the request to the sent reques array and that user is shown as "request sent". so no
+    // further request are made
     function addToSentRequests(id) {
         setUserData((prevData) => {
             prevData.sentRequests.push(id);
@@ -149,6 +180,7 @@ export default function Home() {
         });
     }
 
+    // when the friend is added the follow request of that friend is removed from the data
     function removeFollowRequestAndFriend(id) {
         setDataArray((prevData) => {
             const updatedArray = prevData.filter(item => {
@@ -158,23 +190,30 @@ export default function Home() {
         });
     }
 
+    // to set the type of chat and based on that normal chat or group chats component is rendered
     function selectedChatSetter(chat) {
         setSelectedChat(chat);
     }
 
+    // sets the option selected and also the header text based on the option
     function selectedOptionSetter(option, text) {
         setOptionsSelected(option);
         setHeaderText(text);
     }
 
+    // sets if the user data is changed and based on that a fetch request is made
     function isUserChangedSetter(value) {
         setIsUserChanged(value);
     }
 
+    // generate a room id so users can connect to this room
     function generateRoomId(userId, friendId) {
         const sortedArray = [userId, friendId].sort();
         return `room${sortedArray[0]},${sortedArray[1]}`;
     }
+
+    // gets the chat data based on the type and stores that data in tha appropriate state
+    // also the room id is generated which is sent to the server so that other users can also connect to that same room id
     function getChatData(data, type) {
         if (type === "normal") {
             axiosPrivate.get(`/user/get-chat/${data._id}`).then(res => {
@@ -186,7 +225,7 @@ export default function Home() {
     
             const roomId = generateRoomId(userData._id, data._id);
             socket.emit("join-room", joinedRoom, roomId);
-    
+            console.log("the data passed is", data);
             setFriendData(data);
         }
     
@@ -204,7 +243,8 @@ export default function Home() {
             setGroupData(data);
         }
     }
-    
+
+    // depending on the type of chat the last message is updated in the list of chats / group chats.
     function chatListArraySetter(id, data, chatType = "normal") {
         if (chatType === "normal") {
             setChatList((prevData) => {
@@ -231,6 +271,7 @@ export default function Home() {
         }
     }
     
+    // depending on the chat types specific data is sent to the sockets.
     function sendMessageToWS(sentData, content, contentId, chatType = "normal", type = "content") {
         const data = {
             [type]: content,
@@ -257,6 +298,8 @@ export default function Home() {
         }
     }
     
+    // depending upon the type the if the user sends the message to other user the message is updated in the users chat
+    // group chats array
     function chatDataSetter(data, type = "normal") {
         if (type === "normal") {
             setChatData((prevChatData) => {
@@ -278,10 +321,12 @@ export default function Home() {
         }
     }
     
+    // to set the image of the selected friend to chat
     function chatFriendImageSetter(url) {
         setFriendChatImage(url);
     }
     
+    // handles the deletion of message message stored the message to delete data in state
     function handleMessageDelete(messageId, type) {
         setMessageToDeleteInfo({
             collectionId: type === "normal" ? chatData._id : groupChatData[0]._id,
@@ -291,6 +336,8 @@ export default function Home() {
         setShowDeletMessageOption(true);
     }
     
+    // based on the type the speicific message is deleted form the chat array and the id is sent to the sockers 
+    // when the same message is removed from the other users chat array
     function removeDeletedMessageFromChat(messageId, type) {
         if (type === "normal") {
             setChatData((prevData) => {
@@ -315,6 +362,7 @@ export default function Home() {
         }
     }
     
+    // to delete the selected from the database and subsequntly from the chat array
     async function deleteMessage() {
         try {
             await axiosPrivate.delete(`/user/delete-message?data=${JSON.stringify(messageToDeleteInfo)}`);
@@ -324,7 +372,7 @@ export default function Home() {
             console.log("failed to delete the specified message", error);
         }
     }
-    console.log("the options defined are", optionsSelected);
+    
     return (
         <div>
             {showDeleteMessageOptions &&

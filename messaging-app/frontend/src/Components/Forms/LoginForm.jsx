@@ -6,7 +6,9 @@ import { isAuth } from "../Context/authContext";
 
 export default function LoginForm() {
     const [formData, setformData] = useState({});
+    // is input checked
     const [checked, setChecked] = useState(false);
+    // if login failed its set to true
     const [isFailed, setIsFailed] = useState(false);
     const [errorMessage, setErrorMessage] = useState(null);
     const { setIsAuthenticated } = useContext(isAuth);
@@ -35,7 +37,7 @@ export default function LoginForm() {
     function handleChecked() {
         setChecked(!checked);
     }
-
+    // the tokens returned from the server are stored in the app memory and the local strage
     function handleSubmit(e) {
         e.preventDefault();
         server.post("/auth-user/login", { ...formData }).then((res) => {

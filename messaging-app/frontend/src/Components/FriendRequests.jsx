@@ -2,11 +2,13 @@ import { useState } from "react"
 import useInterceptor from "./hooks/useInterceptors"
 import PropTypes from "prop-types"
 
+
 export default function FriendRequests({ 
     data,  
     isUserChangedSetter, 
     removeFollowRequest 
 }){
+    // loading states for access and decline buttons
     const axiosPrivate = useInterceptor()
     const [acceptLoading, setAcceptLoading] = useState(false)
     const [declineLoading, setDeclineLoading] = useState(false)

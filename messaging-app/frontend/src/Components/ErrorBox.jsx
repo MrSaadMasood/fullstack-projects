@@ -1,5 +1,6 @@
 import PropTypes from "prop-types"
 
+// if the image uploaded is larger than the recommended size this div is showm
 export default function ErrorBox({ data }){
     
     const dateObject = new Date(data.time)

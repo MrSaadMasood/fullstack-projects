@@ -23,6 +23,7 @@ export default function RightSideBox({
     const axiosPrivate = useInterceptor();
     const dateObject = new Date(data.time);
 
+    // if the chat contains a path to the image the data is fetched converted to url and shown 
     useEffect(() => {
         async function getChatImage(image) {
             try {

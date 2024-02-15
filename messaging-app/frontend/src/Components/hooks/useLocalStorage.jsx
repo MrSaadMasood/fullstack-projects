@@ -1,5 +1,6 @@
 import { useState } from "react"
 
+// handles the tokens stored in the local storage
 export default function useLocalStorage(){
     const [ value, setValue] = useState(null)
 

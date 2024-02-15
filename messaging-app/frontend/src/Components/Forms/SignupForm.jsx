@@ -11,6 +11,7 @@ export default function SignUpForm() {
     const width = isFailed ? "w-[23rem] h-auto" : "w-0 h-0";
     const navigate = useNavigate();
 
+    // timer to remove the error div
     useEffect(() => {
         if (isFailed) {
             const timer = setTimeout(() => {
@@ -33,15 +34,16 @@ export default function SignUpForm() {
         setChecked(!checked);
     }
 
+    // if the user is successfully registered then he's redirected to the login page
     function handleSubmit(e) {
         e.preventDefault();
         const result = regexCheck(formData.password);
 
         if (result) {
-            server.post("/auth-user/sign-up", { ...formData }).then((res) => {
+            server.post("/auth-user/sign-up", { ...formData }).then(() => {
                 setFormData({});
                 navigate("/login");
-            }).catch((error) => {
+            }).catch(() => {
                 setErrorMessage("Could not sign you up, try again!");
                 setIsFailed(true);
             });

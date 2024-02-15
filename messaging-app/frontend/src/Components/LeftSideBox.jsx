@@ -20,6 +20,7 @@ export default function LeftSideBox({
     const [url, setUrl] = useState("");
     const dateObject = new Date(data.time);
 
+    // if the chat contains a path to the image the data is fetched converted to url and shown 
     useEffect(() => {
         async function getChatImage(image) {
             try {

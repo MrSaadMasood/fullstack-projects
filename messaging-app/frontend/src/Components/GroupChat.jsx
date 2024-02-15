@@ -9,7 +9,7 @@ import RightSideBox from "./RightSideBox";
 import useInterceptor from "./hooks/useInterceptors";
 
 GroupChat.propTypes = {
-    
+
     selectedChatSetter : PropTypes.func,
     chatDataSetter : PropTypes.func,
     handleMessageDelete : PropTypes.func,
@@ -45,6 +45,7 @@ export default function GroupChat({
     const axiosPrivate = useInterceptor();
     const [input, setInput] = useState("");
 
+    // to scroll the overflowing div to the bottom
     useEffect(() => {
         const div = chatDiv.current;
 
@@ -58,7 +59,7 @@ export default function GroupChat({
     function onChange(e) {
         setInput(e.target.value);
     }
-
+    // handles the message submission and then sends the message to the user connected to the same room
     async function handleSubmit(e) {
         e.preventDefault();
 
@@ -74,6 +75,7 @@ export default function GroupChat({
         }
     }
 
+    // handles the image submission and then sends the message to the user connected to the same room
     async function handleFileChange(e) {
         const image = e.target.files[0];
 

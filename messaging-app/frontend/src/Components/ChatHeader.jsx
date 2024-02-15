@@ -1,10 +1,12 @@
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 import PropTypes from "prop-types"
+
 export default function ChatHeader({ 
     selectedChatSetter, 
     friendData, 
     friendChatImage
 }) {
+    // this function is used for smaller devices to go back from the chat display to chat list display
     function goBack() {
         selectedChatSetter(null);
     }

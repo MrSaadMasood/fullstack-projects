@@ -28,10 +28,13 @@ export default function GroupMessagesList({
     getChatData,
     chatFriendImageSetter,
 }) {
+
     const dateObject = new Date(data?.lastMessage?.time);
     const [picture, setPicture] = useState("/placeholder.png");
     const axiosPrivate = useInterceptor();
 
+    // if data contains the path to the image, the image blob fetched from the server and is converted to object url which is then
+    // used to display the image of each group  
     useEffect(() => {
         async function getChatImage(image) {
             try {

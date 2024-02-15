@@ -7,9 +7,16 @@ export default function useInterceptor() {
     const { isAuthenticated } = useContext(isAuth);
     const { setItem } = useLocalStorage();
 
+    // adds the inceptors on the request and response object
+    // on request object the access token is attached with every request
+    // if the request to backend fails it is checked if the previous request sent is the first try
+    // if yes then a seperate request is sent to the server to refresh the access token which is stored again and the original
+    // request with new access token is sent to the sever
     useEffect(() => {
+
         const requestInterceptor = axiosCustom.interceptors.request.use(
             (config) => {
+                // checking if the authorization headers is already added this means the request was sent second time.
                 if (!config.headers.Authorization) {
                     config.headers.Authorization = `Bearer ${isAuthenticated.accessToken}`;
                 }
@@ -38,7 +45,7 @@ export default function useInterceptor() {
                 return Promise.reject(error);
             }
         );
-
+        // when the component unmounts the interceptors are removed
         return () => {
             axiosCustom.interceptors.request.eject(requestInterceptor);
             axiosCustom.interceptors.response.eject(responseInterceptor);

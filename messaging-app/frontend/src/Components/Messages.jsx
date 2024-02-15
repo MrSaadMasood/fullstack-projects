@@ -29,6 +29,7 @@ export default function Messages({
     const axiosPrivate = useInterceptor();
     const dateObject = new Date(data?.lastMessage?.time);
 
+    // if the chat list contains a path to the image the data is fetched converted to url and shown 
     useEffect(() => {
         async function getChatImage(image) {
             try {

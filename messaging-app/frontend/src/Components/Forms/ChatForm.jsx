@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { IoMdSend } from "react-icons/io";
 import { AiFillPicture } from "react-icons/ai";
 import PropTypes from "prop-types"
+
 export default function ChatForm({
     handleFileChange,
     handleSubmit,

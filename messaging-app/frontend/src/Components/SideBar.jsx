@@ -22,6 +22,7 @@ export default function SideBar({ setOptions, profilePictureUrl }) {
   const { removeItem } = useLocalStorage();
   const navigate = useNavigate();
 
+// handles the logout functionality the user refersh token is removed from the database and the the local storage is emptied
   function logout() {
     server
         .delete(`/auth-user/logout/${isAuthenticated.refreshToken}`)
