@@ -2,12 +2,12 @@ import axios from "axios";
 
 // custom axios instances. One for login and signup and one for protected routes
 const server = axios.create({
-    baseURL : "http://localhost:3000/",
+    baseURL : import.meta.env.VITE_REACT_APP_SITE_URL,
     headers : { "Content-Type" : "application/json"}
 })
 
 const axiosCustom = axios.create({
-    baseURL : "http://localhost:3000/",
+    baseURL : import.meta.env.VITE_REACT_APP_SITE_URL,
     headers : { "Content-Type" : "application/json"} 
 })
 

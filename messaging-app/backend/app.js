@@ -16,11 +16,11 @@ const server = http.createServer(app)
 // creating a new server instance form the above server made with http. this server instance will be used for websockets
 const io = new Server(server , {
     cors : {
-        origin : "http://localhost:5173"
+        origin : process.env.CROSS_ORIGIN
     }
 })
 app.use(cors({
-    origin : "http://localhost:5173"
+    origin : process.env.CROSS_ORIGIN
 }))
 
 app.use(express.json())

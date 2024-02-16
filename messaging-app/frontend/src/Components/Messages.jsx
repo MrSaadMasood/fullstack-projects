@@ -65,7 +65,8 @@ export default function Messages({
                     <img src={picture} alt="" width={"300px"} />
                 </div>
 
-                <div className="h-16 lg:h-12 w-[17rem] lg:w-[13rem] sm:w-[26rem] flex flex-col justify-around items-start ml-2 sm:ml-3 md:ml-5">
+                <div className="h-16 lg:h-12 w-[17rem] lg:w-[13rem] sm:w-[26rem] flex flex-col justify-around items-start
+                text-left ml-2 sm:ml-3 md:ml-5">
                     <p className="font-bold text-base sm:text-lg lg:text-xs">
                         {data?.friendData.fullName}
                     </p>
