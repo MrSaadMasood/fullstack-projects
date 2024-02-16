@@ -27,9 +27,10 @@ app.use(express.json())
 app.use(express.urlencoded({ extended : false}))
 
 // if database connection is successfull then configuring the server to listen to the port
+server.listen(PORT , ()=> console.log("the server is connected at port", PORT))
 connectData((err)=>{
     if(!err){
-        server.listen(PORT , ()=> console.log("the server is connected at port", PORT))
+        console.log("successfully connected to the database");
     }
     else console.log(err)
 })
