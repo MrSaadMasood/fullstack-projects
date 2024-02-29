@@ -2,9 +2,13 @@ const bcrypt = require("bcrypt");
 const { connectData, getData } = require("../connection");
 const { validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
+const { generateAccessToken } = require("../utils/utils");
+const { MongoClient } = require("mongodb");
+const { dataBaseConnectionMaker } = require("./controllerHelpers");
 require("dotenv").config();
 
 let database;
+const mongoUrl = process.env.MONGO_URL
 
 connectData((err) => {
     if (!err) {
@@ -13,14 +17,13 @@ connectData((err) => {
 });
 
 // based on the validation result the password is hased and the user data is stored in the database
-exports.createUser = (req, res) => {
+exports.createUser = async (req, res) => {
     const result = validationResult(req);
     const { fullName, email, password } = req.body;
-
+    const database = await dataBaseConnectionMaker(process.env.URI)
     if (result.isEmpty()) {
         bcrypt.hash(password, 10, async (err, hashedPassword) => {
             if (err) return res.status(400).json({ error: "the user could not be created" });
-            
             try {
                 const user = await database.collection("users").insertOne({
                     fullName: fullName,
@@ -32,10 +35,9 @@ exports.createUser = (req, res) => {
                 });
 
                 if (!user) throw new Error;
-                
                 return res.json({ message: "user successfully created" });
             } catch (error) {
-                res.status(400).json({ error: "the user could not be created" });
+                res.status(400).json({ error: "input validation failed" });
             }
         });
     } else {
@@ -47,7 +49,7 @@ exports.createUser = (req, res) => {
 exports.loginUser = async (req, res) => {
     const result = validationResult(req);
     const { email, password } = req.body;
-
+    const database = await dataBaseConnectionMaker(process.env.URI)
     if (result.isEmpty()) {
         try {
             const user = await database.collection("users").findOne(
@@ -66,6 +68,7 @@ exports.loginUser = async (req, res) => {
             if (!user) throw new Error;
             
             const match = await bcrypt.compare(password, user.password);
+
             if (!match) return res.status(404).json({ message: "user not found" });
 
             const accessToken = generateAccessToken({ id: user._id });
@@ -92,23 +95,23 @@ exports.loginUser = async (req, res) => {
 // is present in the database of the user
 exports.refreshUser = async (req, res) => {
     const { refreshToken } = req.body;
-
+    const database = await dataBaseConnectionMaker(process.env.URI)
     try {
         const tokenCheck = await database.collection("tokens").findOne({ token: refreshToken });
 
-        if (!tokenCheck) return res.status(400).json({ error: "cannot refresh the token" });
+        if (!tokenCheck) return res.status(399).json({ error: "cannot refresh the token" });
 
         jwt.verify(refreshToken, process.env.REFRESH_SECRET, (err, data) => {
-            if (err) return res.sendStatus(400);
+            if (err) return res.sendStatus(399);
 
             const newAccessToken = generateAccessToken({ id: data.id });
 
-            if (!newAccessToken) return res.sendStatus(400);
+            if (!newAccessToken) return res.sendStatus(399);
 
             res.json({ newAccessToken });
         });
     } catch (error) {
-        res.status(400).json({ error: "cannot refresh the token" });
+        res.status(399).json({ error: "cannot refresh the token" });
     }
 };
 
@@ -116,6 +119,7 @@ exports.refreshUser = async (req, res) => {
 exports.logoutUser = async (req, res) => {
     const { user } = req.params;
 
+    const database = await dataBaseConnectionMaker(process.env.URI)
     try {
         const deleteToken = await database.collection("tokens").deleteOne({ token: user });
 
@@ -128,8 +132,3 @@ exports.logoutUser = async (req, res) => {
         res.status(400).json({ error: "logout failed" });
     }
 };
-
-// to generate the access token
-function generateAccessToken(user) {
-    return jwt.sign(user, process.env.ACCESS_SECRET, { expiresIn: "15m" });
-}

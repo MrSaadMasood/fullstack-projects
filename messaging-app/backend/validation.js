@@ -1,6 +1,5 @@
 // schema for different collections
-db.createCollection(
-    "users", {
+const usersCollectionSchema = {
         validator : {
             $jsonSchema : {
                 required : ["fullName", "email", "password"],
@@ -89,10 +88,9 @@ db.createCollection(
         },
         validationAction : "error"
     }
-)
 
-db.createCollection(
-    "normalChats", {
+
+const normalChatsCollectionSchema = {
         validator : {
             $jsonSchema : {
                 properties : {
@@ -125,10 +123,8 @@ db.createCollection(
         },
         validationAction : "error"
     }
-)
 
-db.createCollection(
-    "groupChats" , {
+const groupChatsCollectionSchema = {
         validator : {
             $jsonSchema : {
                 properties : {
@@ -161,10 +157,9 @@ db.createCollection(
         },
         validationAction : "error"
     }
-)
 
-db.createCollection(
-    "tokens", {
+const tokensCollectionSchema = 
+    {
         validator : {
             $jsonSchema : {
                 required : ["token"],
@@ -176,4 +171,10 @@ db.createCollection(
             }
         }
     }
-)
+
+module.exports = {
+    usersCollectionSchema,
+    normalChatsCollectionSchema,
+    groupChatsCollectionSchema,
+    tokensCollectionSchema
+}

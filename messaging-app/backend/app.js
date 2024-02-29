@@ -8,7 +8,6 @@ const userRouter = require("./routes/userRouter.js")
 const { connectData} = require("./connection.js")
 require("dotenv").config()
 const jwt = require("jsonwebtoken")
-const path = require("path")
 const PORT = process.env.PORT
 
 const server = http.createServer(app)
@@ -27,10 +26,11 @@ app.use(express.json())
 app.use(express.urlencoded({ extended : false}))
 
 // if database connection is successfull then configuring the server to listen to the port
-server.listen(PORT , ()=> console.log("the server is connected at port", PORT))
+// server.listen(PORT , ()=> console.log("the server is connected at port", PORT))
 connectData((err)=>{
     if(!err){
         console.log("successfully connected to the database");
+        server.listen(PORT , ()=> console.log("the server is connected at port", PORT))
     }
     else console.log(err)
 })
