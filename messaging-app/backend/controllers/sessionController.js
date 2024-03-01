@@ -20,7 +20,6 @@ connectData((err) => {
 exports.createUser = async (req, res) => {
     const result = validationResult(req);
     const { fullName, email, password } = req.body;
-    const database = await dataBaseConnectionMaker(process.env.URI)
     if (result.isEmpty()) {
         bcrypt.hash(password, 10, async (err, hashedPassword) => {
             if (err) return res.status(400).json({ error: "the user could not be created" });
@@ -49,7 +48,6 @@ exports.createUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
     const result = validationResult(req);
     const { email, password } = req.body;
-    const database = await dataBaseConnectionMaker(process.env.URI)
     if (result.isEmpty()) {
         try {
             const user = await database.collection("users").findOne(
@@ -95,7 +93,6 @@ exports.loginUser = async (req, res) => {
 // is present in the database of the user
 exports.refreshUser = async (req, res) => {
     const { refreshToken } = req.body;
-    const database = await dataBaseConnectionMaker(process.env.URI)
     try {
         const tokenCheck = await database.collection("tokens").findOne({ token: refreshToken });
 
@@ -119,7 +116,6 @@ exports.refreshUser = async (req, res) => {
 exports.logoutUser = async (req, res) => {
     const { user } = req.params;
 
-    const database = await dataBaseConnectionMaker(process.env.URI)
     try {
         const deleteToken = await database.collection("tokens").deleteOne({ token: user });
 

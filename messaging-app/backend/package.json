@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "cross-env NODE_ENV=production node app.js",
-    "test": "cross-env NODE_ENV=test jest ./tests/integration-tests/sessionController.test.js --coverage --coverageReporters='text-summary' --verbose --runInBand --detectOpenHandles",
+    "test": "cross-env NODE_ENV=test jest ./tests/init ./tests/err  --coverage --coverageReporters='text-summary' --verbose --runInBand --detectOpenHandles",
     "dev": "cross-env NODE_ENV=development nodemon app.js"
   },
   "keywords": [],

@@ -1,6 +1,11 @@
 const { MongoMemoryServer } = require("mongodb-memory-server")
 const { MongoClient } = require("mongodb")
-const { usersCollectionSchema, tokensCollectionSchema, normalChatsCollectionSchema, groupChatsCollectionSchema } = require("../validation")
+const { 
+    usersCollectionSchema, 
+    tokensCollectionSchema, 
+    normalChatsCollectionSchema, 
+    groupChatsCollectionSchema } = require("../validation")
+const { users, normalChats, groupChats } = require("./sampleData")
 require("dotenv").config()
 const res = {
     json : jest.fn((value)=> value),
@@ -95,23 +100,15 @@ async function dbConnection(){
     mongoServer = await MongoMemoryServer.create()
     const uri = mongoServer.getUri()
     connection = await MongoClient.connect(uri)
-    console.log("the uri obtained is", uri)
     process.env.URI = uri
     const database = connection.db("chat-app")
     await database.createCollection("users", usersCollectionSchema)
     await database.createCollection("tokens", tokensCollectionSchema)
     await database.createCollection("normalChats", normalChatsCollectionSchema)
     await database.createCollection("groupChats", groupChatsCollectionSchema)
-
-    const result = await database.collection("users").insertOne({
-                    fullName: "testName",
-                    email: "test@gmail.com",
-                    password: "$2b$10$ODylWueOKePclLOLIiaiVOBlOlXbyfLTwjMvRyswJ4qWPweSO96WG",
-                    friends: [],
-                    receivedRequests: [],
-                    sentRequests: [],
-                });
-
+    await database.collection("users").insertMany(users);
+    await database.collection("normalChats").insertMany(normalChats)
+    await database.collection("groupChats").insertMany(groupChats)
 }
 
 async function dbDisconnect(){

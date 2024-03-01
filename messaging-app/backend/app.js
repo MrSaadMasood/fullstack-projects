@@ -7,7 +7,7 @@ const authIndex = require("./routes/index.js")
 const userRouter = require("./routes/userRouter.js")
 const { connectData} = require("./connection.js")
 require("dotenv").config()
-const jwt = require("jsonwebtoken")
+const { authenticateUser } = require("./middlewares/middlewares.js")
 const PORT = process.env.PORT
 
 const server = http.createServer(app)
@@ -29,7 +29,6 @@ app.use(express.urlencoded({ extended : false}))
 // server.listen(PORT , ()=> console.log("the server is connected at port", PORT))
 connectData((err)=>{
     if(!err){
-        console.log("successfully connected to the database");
         server.listen(PORT , ()=> console.log("the server is connected at port", PORT))
     }
     else console.log(err)
@@ -64,13 +63,3 @@ io.on("connection" , (socket)=>{
 
 })
 
-// for the verification of jwt access token
-function authenticateUser(req, res, next){
-    const authHeader = req.headers.authorization
-    const accessToken = authHeader.split(" ")[1]
-    jwt.verify(accessToken, process.env.ACCESS_SECRET, (err, user)=>{
-        if(err) return res.status(401).json({ error : "failed to authenticate user"})
-        req.user = user
-        next()
-    }) 
-}

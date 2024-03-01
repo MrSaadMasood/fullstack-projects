@@ -15,7 +15,8 @@ const {
     getCustomData, 
     convertStringArrayToObjectIdsArray, 
     updateGroupChat, 
-    deleteMessageFromChat 
+    deleteMessageFromChat, 
+    dataBaseConnectionMaker
 } = require("./controllerHelpers");
 
 const mongoUrl = process.env.MONGO_URL
@@ -31,7 +32,7 @@ connectData((err)=>{
 exports.getUpdatedData = async(req, res)=>{
     const { id } = req.user
     try {
-        const updatedData = await db.collection("users").findOne(
+        const updatedData = await database.collection("users").findOne(
             { _id : new ObjectId(id)}, { projection : { password : 0, email : 0}}
         )
         if(!updatedData) throw new Error
@@ -314,7 +315,6 @@ exports.changeBio = async(req, res)=>{
 exports.saveProfilePicturePath = async (req, res)=>{
     const { id} = req.user
     const { filename } = req.file
-    
     try {
         const addingProfilePicture = await database.collection("users").updateOne(
             {_id : new ObjectId(id)}, 
@@ -352,6 +352,7 @@ exports.deletePrevProfilePicture = (req, res)=>{
 
 // gets the data of all the friends.
 exports.getFriendsData = async (req, res)=>{
+
     const {id} = req.user
     try {
         const friendsData = await database.collection("users").aggregate(

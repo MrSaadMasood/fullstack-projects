@@ -3,6 +3,7 @@ const supertest = require("supertest")
 const indexRouter = require("../../routes/index")
 const express = require("express");
 
+// const database = await dataBaseConnectionMaker(process.env.URI)
 
 const app = express()
 app.use(express.json())
@@ -38,8 +39,8 @@ describe("tests block for the session controllers", ()=>{
 
     it("tests the login route", async ()=>{
         const result = await api.post("/auth-user/login").type("form").send({
-            email : "test@gmail.com",
-            password : "Testing.123"
+            email : "saad@gmail.com",
+            password : "Saad.Masood1122"
         })
         expect(result.status).toBe(200)
         expect(result.statusCode).toBe(200)
@@ -50,7 +51,6 @@ describe("tests block for the session controllers", ()=>{
                 refreshToken : expect.any(String)
             })
             )
-        
         refreshToken = result._body.refreshToken
 
         const error = await api.post("/auth-user/login").type("form").send({

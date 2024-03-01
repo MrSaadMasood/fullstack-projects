@@ -225,7 +225,6 @@ export default function Home() {
     
             const roomId = generateRoomId(userData._id, data._id);
             socket.emit("join-room", joinedRoom, roomId);
-            console.log("the data passed is", data);
             setFriendData(data);
         }
     
