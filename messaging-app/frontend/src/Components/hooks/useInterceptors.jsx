@@ -1,7 +1,7 @@
 import { useContext, useEffect } from "react";
-import { isAuth } from "../Context/authContext";
 import useLocalStorage from "./useLocalStorage";
 import server, { axiosCustom } from "../api/axios";
+import { isAuth } from "../Context/authContext";
 
 export default function useInterceptor() {
     const { isAuthenticated } = useContext(isAuth);
@@ -18,7 +18,7 @@ export default function useInterceptor() {
             (config) => {
                 // checking if the authorization headers is already added this means the request was sent second time.
                 if (!config.headers.Authorization) {
-                    config.headers.Authorization = `Bearer ${isAuthenticated.accessToken}`;
+                    config.headers.Authorization = `Bearer ${isAuthenticated?.accessToken}`;
                 }
 
                 return config;
@@ -30,7 +30,7 @@ export default function useInterceptor() {
             (response) => response,
             async (error) => {
                 const previousRequest = error.config;
-                if (error.response.status === 401 && !previousRequest.firstTry) {
+                if (error.response?.status === 401 && !previousRequest.firstTry) {
                     previousRequest.firstTry = true;
                     try {
                         const response = await server.post("/auth-user/refresh", { refreshToken: isAuthenticated.refreshToken });

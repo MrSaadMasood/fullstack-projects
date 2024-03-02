@@ -59,6 +59,7 @@ export default function GroupMessagesList({
 
     return (
         <button
+            data-testid="main"
             className={`hover:bg-[#343434] w-full p-3 flex lg:flex justify-between items-center 
             border-b-2 border-[#555555] h-28 lg:h-20`}
             onClick={() => {

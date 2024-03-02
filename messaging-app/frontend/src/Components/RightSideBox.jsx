@@ -6,7 +6,7 @@ RightSideBox.propTypes = {
     sender : PropTypes.string,
     chatType : PropTypes.string,
     data : PropTypes.shape({
-        time : PropTypes.date,
+        time : PropTypes.string,
         path : PropTypes.string,
         content : PropTypes.string,
         id : PropTypes.string.isRequired
@@ -44,16 +44,18 @@ export default function RightSideBox({
 
         if (data.path) {
             getChatImage(data.path);
+            
+            return () => {
+                URL.revokeObjectURL(url);
+            };
         }
 
-        return () => {
-            URL.revokeObjectURL(url);
-        };
     }, [data, axiosPrivate, chatType]);
 
     return (
         <div 
             onDoubleClick={() => deleteMessage(data.id)} 
+            data-testid="main"
             className="text-white text-base w-[100%] h-auto mb-2 flex justify-end items-center"
         >
             <div className="w-[60%] mr-3 h-auto flex flex-col justify-between items-end">

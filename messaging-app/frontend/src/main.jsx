@@ -5,11 +5,15 @@ import { Outlet, Route, RouterProvider, createBrowserRouter, createRoutesFromEle
 import Home from './Components/Home.jsx'
 import Login from './Components/Login.jsx'
 import Signup from './Components/Signup.jsx'
-import { AuthProvider } from './Components/Context/authContext.jsx'
 import PrivateRoute from './Components/PrivateRoute.jsx'
 import NewGroupForm from './Components/Forms/NewGroupForm.jsx'
 import ErrorPage from './Components/ErrorPage.jsx'
+import { AuthProvider } from './Components/Context/authProvider.jsx'
 
+// async function deferRender(){
+//   const { worker } = await import("./mocks/browser.js")
+//   return worker.start()
+// }
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
@@ -23,12 +27,14 @@ const router = createBrowserRouter(
     </>
   )
 )
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <AuthProvider>
-    <RouterProvider router={router} >
-    <React.StrictMode>
-      <Outlet/>
-    </React.StrictMode>,
-    </RouterProvider>
-  </AuthProvider>
-)
+
+
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    <AuthProvider>
+      <RouterProvider router={router} >
+      <React.StrictMode>
+        <Outlet/>
+      </React.StrictMode>,
+      </RouterProvider>
+    </AuthProvider>
+  )

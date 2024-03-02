@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { FaCamera } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import useInterceptor from "../hooks/useInterceptors";
+import server from "../api/axios";
 
 export default function NewGroupForm() {
     const navigate = useNavigate();
@@ -32,7 +33,6 @@ export default function NewGroupForm() {
 
         getAllFriendsData();
     }, [axiosPrivate]);
-
     // timer to remove the error div
     useEffect(() => {
         if (errorDiv) {
@@ -92,6 +92,7 @@ export default function NewGroupForm() {
             });
             navigate("/");
         } catch (error) {
+            setErrorMessage("Failed to create a new Group")
             console.log("error occurred while creating a new form", error);
         }
     };

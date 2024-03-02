@@ -1,12 +1,12 @@
 import { useState } from "react";
 import useInterceptor from "./hooks/useInterceptors";
-import PropTypes from "prop-types"
+import PropTypes, { string } from "prop-types"
 
 Users.propTypes = {
     isUserChangedSetter : PropTypes.func,
     addToSentRequests : PropTypes.func,
     userData : PropTypes.shape({
-        sentRequests : PropTypes.arrayOf(PropTypes.object)
+        sentRequests : PropTypes.arrayOf(string)
     }),
     data : PropTypes.shape({
         _id : PropTypes.string.isRequired,

@@ -6,7 +6,7 @@ LeftSideBox.propTypes = {
     sender : PropTypes.string,
     chatType : PropTypes.string,
     data : PropTypes.shape({
-        time : PropTypes.date,
+        time : PropTypes.string,
         path : PropTypes.string,
         content : PropTypes.string
     })
@@ -41,15 +41,16 @@ export default function LeftSideBox({
 
         if (data.path) {
             getChatImage(data.path);
+            
+            return () => {
+                URL.revokeObjectURL(url);
+            };
         }
 
-        return () => {
-            URL.revokeObjectURL(url);
-        };
     }, [data, axiosPrivate, chatType]);
 
     return (
-        <div className="text-white text-base w-[100%] h-auto mb-2 
+        <div data-testid="main" className="text-white text-base w-[100%] h-auto mb-2 
         flex justify-start items-center">
             <div className="w-[60%] ml-3 h-auto flex flex-col justify-between items-start">
                 <div className="text-[.5rem] h-4 w-auto flex justify-between items-center">

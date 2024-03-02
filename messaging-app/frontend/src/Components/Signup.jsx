@@ -3,7 +3,7 @@ import SignUpForm from "./Forms/SignupForm";
 export default function Signup() {
   return (
     <div className="flex">
-        <div className="h-screen w-[33%] hidden md:block overflow-hidden">
+        <div data-testid={"image"} className="h-screen w-[33%] hidden md:block overflow-hidden">
             <img src="/pattern.jpg" alt="theme" width={"2000px"} />
         </div>
         <div className="bg-black text-white h-screen w-full md:w-[67%] flex flex-col justify-center items-center">

@@ -28,6 +28,7 @@ export default function ChatForm({
                 id="image"
                 className="hidden"
                 accept=".jpg"
+                data-testid="file"
                 ref={fileInputRef}
                 onChange={handleFileChange}
             />
@@ -40,7 +41,7 @@ export default function ChatForm({
                 onChange={onChange}
                 required
             />
-            <button type="submit" className="flex justify-center items-center w-10 ml-1">
+            <button data-testid="submit" type="submit" className="flex justify-center items-center w-10 ml-1">
                 <IoMdSend size={23} color="white" />
             </button>
             <button

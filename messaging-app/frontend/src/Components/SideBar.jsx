@@ -48,7 +48,7 @@ export default function SideBar({ setOptions, profilePictureUrl }) {
             <img src="/logo.png" alt="logo" />
             </button>
             <div className="border-x-2 lg:border-y-2 lg:w-9 lg:h-0 border-gray-600 w-0 h-9"></div>
-            <button onClick={() => setOptions(1, "Chats")}>
+            <button data-testid="option1" onClick={() => setOptions(1, "Chats")}>
             <MdOutlineChatBubbleOutline size={23} />
             </button>
             <button onClick={() => { setOptions(2, "Friends") }}>
@@ -66,8 +66,8 @@ export default function SideBar({ setOptions, profilePictureUrl }) {
             <button onClick={logout}>
             <IoMdLogOut size={23} />
             </button>
-            <button onClick={() => setOptions(6, "Profile")} className="h-8 w-8 rounded-full overflow-hidden">
-            <img src={profilePictureUrl} alt="" width={"300px"} />
+            <button data-testid="image" onClick={() => setOptions(6, "Profile")} className="h-8 w-8 rounded-full overflow-hidden">
+              <img src={profilePictureUrl} alt="" width={"300px"} />
             </button>
         </div>
     </div>

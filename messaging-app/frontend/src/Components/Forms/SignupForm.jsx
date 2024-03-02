@@ -111,7 +111,9 @@ export default function SignUpForm() {
             />
             {isFailed && (
                 <>
-                    <div className={`mt-3 ${width} bg-red-600 rounded-xl text-white text-center fade`}>{errorMessage}</div>
+                    <div
+                        data-testid={"error"} 
+                        className={`mt-3 ${width} bg-red-600 rounded-xl text-white text-center fade`}>{errorMessage}</div>
                 </>
             )}
         </form>

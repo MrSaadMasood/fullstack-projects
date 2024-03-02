@@ -1,7 +1,7 @@
-import { createContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import useLocalStorage from "../hooks/useLocalStorage";
 import PropTypes from "prop-types"
-const isAuth = createContext(null)
+import { isAuth } from "./authContext";
 // passing the initial values for the context and when the user logs in isAuthenticated is an object with two properties
 // accessToken and RefreshToken and then these values are passed to the children and the tokens are stored in the localstorage
 // which are accessed when the user visits the site again thus persisting the user login
@@ -20,7 +20,7 @@ const AuthProvider = ({ children })=>{
     )
 }
 
-export { AuthProvider, isAuth}
+export { AuthProvider}
 
 AuthProvider.propTypes = {
     children : PropTypes.element.isRequired

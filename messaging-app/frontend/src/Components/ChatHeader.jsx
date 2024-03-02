@@ -16,6 +16,7 @@ export default function ChatHeader({
             flex justify-start items-center">
             <div className="w-auto h-14 ml-4 md:ml-8 lg:ml-3 flex justify-start items-center">
                 <button 
+                    data-testid="back"
                     onClick={goBack} 
                     className="lg:hidden"
                 >
@@ -40,8 +41,8 @@ export default function ChatHeader({
 ChatHeader.propTypes = {
     selectedChatSetter : PropTypes.func,
     friendData : PropTypes.shape({
-        fullName : PropTypes.string.isRequired,
-        profilePicture : PropTypes.string.isRequired,
+        fullName : PropTypes.string,
+        profilePicture : PropTypes.string,
         _id : PropTypes.string.isRequired,
         groupName : PropTypes.string,
     }),

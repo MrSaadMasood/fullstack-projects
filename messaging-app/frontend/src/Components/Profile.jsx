@@ -117,6 +117,7 @@ export default function Profile({
                     </div>
                     {!submitProfilePictureButton && (
                         <button
+                            data-testid="getPicture"
                             className="absolute bottom-0 right-7 sm:right-10 flex justify-center items-center
                                 h-8 w-8 sm:h-12 sm:w-12 rounded-full bg-gray-400"
                             onClick={getProfilePicture}
@@ -127,6 +128,7 @@ export default function Profile({
 
                     {submitProfilePictureButton && (
                         <button
+                            data-testid="setImage"
                             className="absolute bottom-0 right-7 sm:right-10 flex justify-center items-center
                                 h-8 w-8 sm:h-12 sm:w-12 rounded-full bg-gray-400"
                             onClick={handleImageSubmission}
@@ -137,6 +139,7 @@ export default function Profile({
                     <input
                         type="file"
                         name="profilePicture"
+                        data-testid="profilePicture"
                         id="profilePicture"
                         className="hidden"
                         onChange={handleImageChange}
@@ -148,9 +151,9 @@ export default function Profile({
                     <h3 className="text-3xl sm:text-4xl font-bold">Bio</h3>
                     <button onClick={() => {
                             setIsBioButtonClicked(true);
-                            bioInput.current.focus()
+                            // bioInput.current.focus()
                         }
-                    } className="">
+                    } data-testid="bioEdit" className="">
                         <FaRegEdit size={30} />
                     </button>
                 </div>
@@ -165,6 +168,7 @@ export default function Profile({
                                 type="text"
                                 name="bio"
                                 id="bio"
+                                placeholder="Enter Bio Here"
                                 value={text}
                                 ref={bioInput}
                                 required
