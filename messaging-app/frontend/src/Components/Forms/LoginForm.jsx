@@ -63,6 +63,7 @@ export default function LoginForm() {
                 <input
                     type="email"
                     name="email"
+                    data-testid="email"
                     id="email"
                     className="p-2 h-12 w-[23rem]"
                     value={formData.email}
@@ -75,6 +76,7 @@ export default function LoginForm() {
                 <input
                     type={checked ? "text" : "password"}
                     name="password"
+                    data-testid="password"
                     id="password"
                     className="p-2 h-12 w-[23rem]"
                     value={formData.password}

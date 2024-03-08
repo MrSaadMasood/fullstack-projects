@@ -403,8 +403,14 @@ export default function Home() {
                                     </p>
                                 </div>
                                 {optionsSelected === 4 &&
-                                    <Link to={"/create-new-group"} state={{ friends: userData.friends }} className="hover:scale-105">
-                                        <CiCirclePlus size={30} />
+                                    <Link 
+                                        to={"/create-new-group"} 
+                                        state={{ friends: userData.friends }} 
+                                        className="hover:scale-105"
+                                    >
+                                        <button data-testid="newGroup">
+                                            <CiCirclePlus size={30} />
+                                        </button>
                                     </Link>
                                 }
     

@@ -60,6 +60,7 @@ export default function SignUpForm() {
             <div className="form-group text-white">
                 <input
                     type="text"
+                    data-testid="fullName"
                     name="fullName"
                     id="fullName"
                     className="p-2 h-12 w-[23rem]"
@@ -73,6 +74,7 @@ export default function SignUpForm() {
                 <input
                     type="email"
                     name="email"
+                    data-testid="email"
                     id="email"
                     className="p-2 h-12 w-[23rem]"
                     value={formData.email}
@@ -86,6 +88,7 @@ export default function SignUpForm() {
                     type={checked ? "text" : "password"}
                     name="password"
                     id="password"
+                    data-testid="password"
                     className="p-2 h-12 w-[23rem]"
                     value={formData.password}
                     onChange={handleChange}

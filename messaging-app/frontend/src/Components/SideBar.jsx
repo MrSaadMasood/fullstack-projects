@@ -51,22 +51,22 @@ export default function SideBar({ setOptions, profilePictureUrl }) {
             <button data-testid="option1" onClick={() => setOptions(1, "Chats")}>
             <MdOutlineChatBubbleOutline size={23} />
             </button>
-            <button onClick={() => { setOptions(2, "Friends") }}>
+            <button data-testid="option2" className=".friends" onClick={() => { setOptions(2, "Friends") }}>
             <RiUserFollowLine size={23} />
             </button>
-            <button onClick={() => { setOptions(3, "Follow Requests") }}>
+            <button data-testid="option3"onClick={() => { setOptions(3, "Follow Requests") }}>
             <FaUserFriends size={23} />
             </button>
-            <button onClick={() => { setOptions(4, "Group Chats") }}>
+            <button data-testid="option4"onClick={() => { setOptions(4, "Group Chats") }}>
             <HiOutlineChatAlt2 size={23} />
             </button>
-            <button onClick={() => { setOptions(5, "Users") }}>
+            <button data-testid="option5"onClick={() => { setOptions(5, "Users") }}>
             <FaRegStar size={23} />
             </button>
-            <button onClick={logout}>
+            <button data-testid="option7"onClick={logout}>
             <IoMdLogOut size={23} />
             </button>
-            <button data-testid="image" onClick={() => setOptions(6, "Profile")} className="h-8 w-8 rounded-full overflow-hidden">
+            <button data-testid="option6" onClick={() => setOptions(6, "Profile")} className="h-8 w-8 rounded-full overflow-hidden">
               <img src={profilePictureUrl} alt="" width={"300px"} />
             </button>
         </div>

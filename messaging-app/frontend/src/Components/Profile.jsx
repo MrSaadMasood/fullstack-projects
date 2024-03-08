@@ -177,6 +177,7 @@ export default function Profile({
                             />
                             <input
                                 type="submit"
+                                data-testid="submit"
                                 value={"Submit"}
                                 className="bg-[#303030] text-white p-2 rounded-md mt-3
                                     cursor-pointer hover:bg-[#1b1a1a]"

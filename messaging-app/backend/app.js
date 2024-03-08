@@ -2,6 +2,7 @@ const express = require("express")
 const { Server } = require("socket.io")
 const http = require("http")
 const cors = require("cors")
+const helmet = require("helmet")
 const app = express()
 const authIndex = require("./routes/index.js")
 const userRouter = require("./routes/userRouter.js")
@@ -18,6 +19,9 @@ const io = new Server(server , {
         origin : process.env.CROSS_ORIGIN
     }
 })
+
+app.use(helmet())
+
 app.use(cors({
     origin : process.env.CROSS_ORIGIN
 }))

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { FaCamera } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import useInterceptor from "../hooks/useInterceptors";
-import server from "../api/axios";
 
 export default function NewGroupForm() {
     const navigate = useNavigate();
